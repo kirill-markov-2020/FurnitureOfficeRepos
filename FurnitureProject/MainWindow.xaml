@@ -71,7 +71,8 @@
 
         </StackPanel>
         <StackPanel x:Name="ConsultantPanel" Visibility="Collapsed">
-
+            <TextBlock Text="Категории товаров" FontSize="32" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="55,20,55,10"/>
+            <DataGrid x:Name="DataGridConsult" AutoGenerateColumns="True" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="400" Margin="15"/>
         </StackPanel>
         <StackPanel x:Name="ManagerPanel" Visibility="Collapsed">
 

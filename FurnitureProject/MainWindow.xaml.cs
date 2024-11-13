@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -79,7 +80,7 @@ namespace FurnitureProject
                 ManagerPanel.Visibility = Visibility.Collapsed;
                 AdministratorPanel.Visibility = Visibility.Collapsed;
                 ConsultantPanel.Visibility = Visibility.Visible;
-
+                LoadCategories();
             }
             else if (TextBoxInputLogin.Text == "Введите логин" && PasswordBox.Password == "")
             {
@@ -117,6 +118,46 @@ namespace FurnitureProject
         {
             connection = new SqlConnection("Server=KIRILL-MARKOV;Database=Furniture;Integrated Security=True;");
             return connection;
+        }
+
+        private void LoadCategories()
+        {
+            List<CategoryFurniture> categories = new List<CategoryFurniture>();
+
+            try
+            {
+                using (SqlConnection connection = GetDatabaseConnection())
+                {
+                    connection.Open();
+
+                    string query = "SELECT * FROM CategoryFurniture";
+                    SqlDataAdapter adapter = new SqlDataAdapter(query, connection);
+                    DataTable dataTable = new DataTable();
+                    adapter.Fill(dataTable);
+
+                    foreach (DataRow row in dataTable.Rows)
+                    {
+                        categories.Add(new CategoryFurniture
+                        {
+                            Id = Convert.ToInt32(row["id"]),
+                            Name = row["name"].ToString()
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при загрузке данных: " + ex.Message);
+            }
+
+            DataGridConsult.ItemsSource = categories;
+        }
+
+
+        public class CategoryFurniture
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
         }
     }
 }
