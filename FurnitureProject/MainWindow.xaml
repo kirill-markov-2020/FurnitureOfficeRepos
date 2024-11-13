@@ -8,7 +8,11 @@
         Title="Furniture" Height="650" Width="800" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize">
     <Grid>
         <StackPanel x:Name="AuthorizationPanel" Visibility="Visible">
-            
+            <TextBlock Text="Авторизация" FontSize="52" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="55,75,55,65"/>
+            <TextBox x:Name="TextBoxInputLogin"  Text="" HorizontalAlignment="Center" Foreground="Gray"  Width="400" Height="50" VerticalAlignment="Center" Margin="15" />
+            <PasswordBox x:Name="PasswordBox" HorizontalAlignment="Stretch" Width="400" Height="50" VerticalAlignment="Stretch" FontSize="20" PasswordChar="*" Padding="12"/>
+            <Button x:Name="AuthorizationButton" Content="Войти" HorizontalAlignment="Center" VerticalAlignment="Center" Width="150" Height="50" FontSize="20"  Margin="45"/>
+
         </StackPanel>
         <StackPanel x:Name="ConsultantPanel" Visibility="Collapsed">
 
