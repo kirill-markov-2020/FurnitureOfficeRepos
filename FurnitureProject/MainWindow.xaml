@@ -62,7 +62,10 @@
 
                 <PasswordBox x:Name="PasswordBox" HorizontalAlignment="Stretch" Width="400" Height="50" Style="{StaticResource PasswordBoxBorderRound}" VerticalAlignment="Stretch" FontSize="20" PasswordChar="*" Padding="12" GotFocus="PasswordBox_GotFocus" LostFocus="PasswordBox_LostFocus"/>
 
+                <TextBox x:Name="PasswordTextBox" HorizontalAlignment="Stretch" Width="400" Height="50" VerticalAlignment="Stretch" FontSize="20" Padding="8" Visibility="Collapsed" IsReadOnly="False" Style="{StaticResource TextBoxBorderRound}" TextChanged="PasswordTextBox_TextChanged"/>
+
                 <TextBlock x:Name="PasswordHintText" Visibility="Visible" Text="Введите пароль" Foreground="Gray" FontSize="20" VerticalAlignment="Stretch" Padding="12" HorizontalAlignment="Stretch" IsHitTestVisible="False"/>
+                <Button x:Name="ShowPasswordButton" Content="👁" HorizontalAlignment="Right" VerticalAlignment="Center" Width="30" Height="30" Margin="0,0,12,0" Background="Transparent" BorderBrush="Transparent" FontSize="20" Click="ShowPasswordButton_Click"/>
             </Grid>
             <Button x:Name="AuthorizationButton" Content="Войти" HorizontalAlignment="Center" Style="{StaticResource ButtonBorderRound}" VerticalAlignment="Center" Width="150" Height="50" FontSize="20"  Margin="45" Click="AuthorizationButton_Click"/>
 
