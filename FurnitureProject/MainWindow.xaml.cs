@@ -80,6 +80,14 @@ namespace FurnitureProject
                 ConsultantPanel.Visibility = Visibility.Visible;
 
             }
+            else if (TextBoxInputLogin.Text == "Введите логин" && PasswordBox.Password == "")
+            {
+                MessageBox.Show("Введите логин или пароль", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            else
+            {
+                MessageBox.Show("Неверный логин или пароль", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
         private void ShowPasswordButton_Click(object sender, RoutedEventArgs e)
         {
