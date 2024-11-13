@@ -64,7 +64,7 @@
 
                 <TextBlock x:Name="PasswordHintText" Visibility="Visible" Text="Введите пароль" Foreground="Gray" FontSize="20" VerticalAlignment="Stretch" Padding="12" HorizontalAlignment="Stretch" IsHitTestVisible="False"/>
             </Grid>
-            <Button x:Name="AuthorizationButton" Content="Войти" HorizontalAlignment="Center" Style="{StaticResource ButtonBorderRound}" VerticalAlignment="Center" Width="150" Height="50" FontSize="20"  Margin="45"/>
+            <Button x:Name="AuthorizationButton" Content="Войти" HorizontalAlignment="Center" Style="{StaticResource ButtonBorderRound}" VerticalAlignment="Center" Width="150" Height="50" FontSize="20"  Margin="45" Click="AuthorizationButton_Click"/>
 
         </StackPanel>
         <StackPanel x:Name="ConsultantPanel" Visibility="Collapsed">

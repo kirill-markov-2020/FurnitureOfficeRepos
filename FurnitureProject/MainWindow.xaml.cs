@@ -53,5 +53,33 @@ namespace FurnitureProject
                 PasswordHintText.Visibility = Visibility.Visible;
             }
         }
+        private void AuthorizationButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (TextBoxInputLogin.Text == "ManagerLogin" && PasswordBox.Password == "ManagerPassword")
+            {
+                AuthorizationPanel.Visibility = Visibility.Collapsed;
+
+                ManagerPanel.Visibility = Visibility.Visible;
+                AdministratorPanel.Visibility = Visibility.Collapsed;
+                ConsultantPanel.Visibility = Visibility.Collapsed;
+            }
+            else if (TextBoxInputLogin.Text == "AdministratorLogin" && PasswordBox.Password == "AdministratorPassword")
+            {
+                AuthorizationPanel.Visibility = Visibility.Collapsed;
+
+                ManagerPanel.Visibility = Visibility.Collapsed;
+                AdministratorPanel.Visibility = Visibility.Visible;
+                ConsultantPanel.Visibility = Visibility.Collapsed;
+            }
+            else if (TextBoxInputLogin.Text == "ConsultantLogin" && PasswordBox.Password == "ConsultantPassword")
+            {
+                AuthorizationPanel.Visibility = Visibility.Collapsed;
+
+                ManagerPanel.Visibility = Visibility.Collapsed;
+                AdministratorPanel.Visibility = Visibility.Collapsed;
+                ConsultantPanel.Visibility = Visibility.Visible;
+
+            }
+        }
     }
 }
