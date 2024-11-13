@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -108,6 +109,14 @@ namespace FurnitureProject
         private void PasswordTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             PasswordBox.Password = PasswordTextBox.Text;
+        }
+
+        private SqlConnection connection;
+
+        private SqlConnection GetDatabaseConnection()
+        {
+            connection = new SqlConnection("Server=KIRILL-MARKOV;Database=Furniture;Integrated Security=True;");
+            return connection;
         }
     }
 }
