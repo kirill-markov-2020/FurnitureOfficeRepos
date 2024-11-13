@@ -6,17 +6,65 @@
         xmlns:local="clr-namespace:FurnitureProject"
         mc:Ignorable="d"
         Title="Furniture" Height="650" Width="800" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize">
+    <Window.Resources>
+        <Style TargetType="TextBox" x:Key="TextBoxBorderRound">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="White" CornerRadius="10" BorderBrush="#FF007EFF" BorderThickness="3">
+                            <ScrollViewer x:Name="PART_ContentHost"  />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="FontSize" Value="20"/>
+        </Style>
+        <Style TargetType="PasswordBox" x:Key="PasswordBoxBorderRound">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border Background="White" CornerRadius="10" BorderBrush="#FF007EFF" BorderThickness="3">
+                            <ScrollViewer x:Name="PART_ContentHost"  />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="FontSize" Value="20"/>
+        </Style>
+        <Style TargetType="Button" x:Key="ButtonBorderRound">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="White" CornerRadius="10" BorderBrush="#FF007EFF" BorderThickness="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="FontSize" Value="20"/>
+
+        </Style>
+    </Window.Resources>
     <Grid>
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="LightBlue" Offset="0"/>
+                <GradientStop Color="#FF5F00FF" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
         <StackPanel x:Name="AuthorizationPanel" Visibility="Visible">
             <TextBlock Text="Авторизация" FontSize="52" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="55,75,55,65"/>
-            <TextBox x:Name="TextBoxInputLogin"  Text="Введите логин" HorizontalAlignment="Center" Foreground="Gray"  Width="400" Height="50" VerticalAlignment="Center" Margin="15" GotFocus="TextBoxInputLogin_GotFocus" LostFocus="TextBoxInputLogin_LostFocus" />
+            <TextBox x:Name="TextBoxInputLogin"  Text="Введите логин" HorizontalAlignment="Center" Style="{StaticResource TextBoxBorderRound}" Foreground="Gray"  Width="400" Height="50" VerticalAlignment="Center" Margin="15" GotFocus="TextBoxInputLogin_GotFocus" LostFocus="TextBoxInputLogin_LostFocus" />
             <Grid HorizontalAlignment="Center" Width="400" Height="50" Margin="15">
 
-                <PasswordBox x:Name="PasswordBox" HorizontalAlignment="Stretch" Width="400" Height="50" VerticalAlignment="Stretch" FontSize="20" PasswordChar="*" Padding="12" GotFocus="PasswordBox_GotFocus" LostFocus="PasswordBox_LostFocus"/>
+                <PasswordBox x:Name="PasswordBox" HorizontalAlignment="Stretch" Width="400" Height="50" Style="{StaticResource PasswordBoxBorderRound}" VerticalAlignment="Stretch" FontSize="20" PasswordChar="*" Padding="12" GotFocus="PasswordBox_GotFocus" LostFocus="PasswordBox_LostFocus"/>
 
                 <TextBlock x:Name="PasswordHintText" Visibility="Visible" Text="Введите пароль" Foreground="Gray" FontSize="20" VerticalAlignment="Stretch" Padding="12" HorizontalAlignment="Stretch" IsHitTestVisible="False"/>
             </Grid>
-            <Button x:Name="AuthorizationButton" Content="Войти" HorizontalAlignment="Center" VerticalAlignment="Center" Width="150" Height="50" FontSize="20"  Margin="45"/>
+            <Button x:Name="AuthorizationButton" Content="Войти" HorizontalAlignment="Center" Style="{StaticResource ButtonBorderRound}" VerticalAlignment="Center" Width="150" Height="50" FontSize="20"  Margin="45"/>
 
         </StackPanel>
         <StackPanel x:Name="ConsultantPanel" Visibility="Collapsed">
