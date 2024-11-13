@@ -9,8 +9,13 @@
     <Grid>
         <StackPanel x:Name="AuthorizationPanel" Visibility="Visible">
             <TextBlock Text="Авторизация" FontSize="52" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="55,75,55,65"/>
-            <TextBox x:Name="TextBoxInputLogin"  Text="" HorizontalAlignment="Center" Foreground="Gray"  Width="400" Height="50" VerticalAlignment="Center" Margin="15" />
-            <PasswordBox x:Name="PasswordBox" HorizontalAlignment="Stretch" Width="400" Height="50" VerticalAlignment="Stretch" FontSize="20" PasswordChar="*" Padding="12"/>
+            <TextBox x:Name="TextBoxInputLogin"  Text="Введите логин" HorizontalAlignment="Center" Foreground="Gray"  Width="400" Height="50" VerticalAlignment="Center" Margin="15" GotFocus="TextBoxInputLogin_GotFocus" LostFocus="TextBoxInputLogin_LostFocus" />
+            <Grid HorizontalAlignment="Center" Width="400" Height="50" Margin="15">
+
+                <PasswordBox x:Name="PasswordBox" HorizontalAlignment="Stretch" Width="400" Height="50" VerticalAlignment="Stretch" FontSize="20" PasswordChar="*" Padding="12" GotFocus="PasswordBox_GotFocus" LostFocus="PasswordBox_LostFocus"/>
+
+                <TextBlock x:Name="PasswordHintText" Visibility="Visible" Text="Введите пароль" Foreground="Gray" FontSize="20" VerticalAlignment="Stretch" Padding="12" HorizontalAlignment="Stretch" IsHitTestVisible="False"/>
+            </Grid>
             <Button x:Name="AuthorizationButton" Content="Войти" HorizontalAlignment="Center" VerticalAlignment="Center" Width="150" Height="50" FontSize="20"  Margin="45"/>
 
         </StackPanel>
