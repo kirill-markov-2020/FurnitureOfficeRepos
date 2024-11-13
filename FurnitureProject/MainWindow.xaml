@@ -7,6 +7,17 @@
         mc:Ignorable="d"
         Title="Furniture" Height="650" Width="800" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize">
     <Grid>
-        
+        <StackPanel x:Name="AuthorizationPanel" Visibility="Visible">
+            
+        </StackPanel>
+        <StackPanel x:Name="ConsultantPanel" Visibility="Collapsed">
+
+        </StackPanel>
+        <StackPanel x:Name="ManagerPanel" Visibility="Collapsed">
+
+        </StackPanel>
+        <StackPanel x:Name="AdministratorPanel" Visibility="Collapsed">
+
+        </StackPanel>
     </Grid>
 </Window>
