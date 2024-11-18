@@ -425,5 +425,12 @@ namespace FurnitureProject
             }
         }
 
+        private void AddCategoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            AdministratorPanel.Visibility = Visibility.Collapsed;
+            AddCategoryPanel.Visibility = Visibility.Visible;
+            CategoryNameTextBox.Text = string.Empty;
+        }
+
     }
 }
