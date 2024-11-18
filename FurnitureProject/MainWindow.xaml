@@ -103,6 +103,7 @@
 
         </StackPanel>
         <StackPanel x:Name="AdministratorPanel" Visibility="Collapsed">
+            <TreeView x:Name="AdminCategoriesTreeView" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="400" Margin="15"/>
 
         </StackPanel>
     </Grid>
