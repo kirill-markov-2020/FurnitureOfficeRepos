@@ -432,5 +432,45 @@ namespace FurnitureProject
             CategoryNameTextBox.Text = string.Empty;
         }
 
+        private void SaveCategoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            string categoryName = CategoryNameTextBox.Text.Trim();
+
+            if (string.IsNullOrEmpty(categoryName))
+            {
+                MessageBox.Show("Название категории не может быть пустым.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                using (SqlConnection connection = GetDatabaseConnection())
+                {
+                    connection.Open();
+
+                    string query = "INSERT INTO CategoryFurniture (name) VALUES (@CategoryName)";
+                    SqlCommand command = new SqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@CategoryName", categoryName);
+                    command.ExecuteNonQuery();
+
+                    MessageBox.Show("Категория успешно добавлена.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+
+                LoadAdminCategoriesAndProducts();
+                AddCategoryPanel.Visibility = Visibility.Collapsed;
+                AdministratorPanel.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при добавлении категории: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void CancelAddCategoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            AddCategoryPanel.Visibility = Visibility.Collapsed;
+            AdministratorPanel.Visibility = Visibility.Visible;
+        }
+
     }
 }
