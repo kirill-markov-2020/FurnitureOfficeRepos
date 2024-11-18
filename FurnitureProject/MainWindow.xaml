@@ -91,12 +91,14 @@
                 </Button>
                 <TextBlock Text="Управление ассортиментом товаров" FontSize="32" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="55,20,55,10"/>
             </Grid>
-            <TreeView x:Name="ManagerCategoriesTreeView" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="400" Margin="15" SelectedItemChanged="ManagerCategoriesTreeView_SelectedItemChanged"/>
+            <Border Margin="10 0 10 0" Grid.Row="1" CornerRadius="10" Background="White">
+                <TreeView x:Name="ManagerCategoriesTreeView" HorizontalAlignment="Stretch" BorderBrush="White" VerticalAlignment="Top" Height="400" Margin="15" SelectedItemChanged="ManagerCategoriesTreeView_SelectedItemChanged"/>
+            </Border>
 
             <StackPanel x:Name="QuantityControlPanel" Orientation="Horizontal" HorizontalAlignment="Center" Margin="15" Visibility="Collapsed">
-                <Button x:Name="IncreaseQuantityButton" Content="Увеличить" Width="100" Height="30" Click="IncreaseQuantityButton_Click"/>
-                <Button x:Name="DecreaseQuantityButton" Content="Уменьшить" Width="100" Height="30" Click="DecreaseQuantityButton_Click"/>
-                <TextBlock x:Name="SelectedProductQuantityText" Text="Количество: " Margin="10,0,0,0" FontSize="16"/>
+                <Button x:Name="IncreaseQuantityButton" Style="{StaticResource ButtonBorderRound}" Content="Увеличить" Width="140" Height="40" Click="IncreaseQuantityButton_Click" Margin="0,0,10,0"/>
+                <Button x:Name="DecreaseQuantityButton" Style="{StaticResource ButtonBorderRound}" Content="Уменьшить" Width="140" Height="40" Click="DecreaseQuantityButton_Click"/>
+                <TextBlock x:Name="SelectedProductQuantityText" Text="Количество: " Margin="10,2,0,0" FontSize="24"/>
             </StackPanel>
 
         </StackPanel>
