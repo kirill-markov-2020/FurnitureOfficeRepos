@@ -64,6 +64,7 @@ namespace FurnitureProject
                 ManagerPanel.Visibility = Visibility.Visible;
                 AdministratorPanel.Visibility = Visibility.Collapsed;
                 ConsultantPanel.Visibility = Visibility.Collapsed;
+                LoadManagerCategoriesAndProducts();
             }
             else if (TextBoxInputLogin.Text == "AdministratorLogin" && PasswordBox.Password == "AdministratorPassword")
             {
@@ -198,6 +199,155 @@ namespace FurnitureProject
             catch (Exception ex)
             {
                 MessageBox.Show("Ошибка при загрузке данных: " + ex.Message);
+            }
+        }
+        private void LoadManagerCategoriesAndProducts()
+        {
+            ManagerCategoriesTreeView.Items.Clear();
+
+            try
+            {
+                using (SqlConnection connection = GetDatabaseConnection())
+                {
+                    connection.Open();
+
+                    string query = @"SELECT cf.id as CategoryId, cf.name as CategoryName, 
+                                p.id as ProductId, p.name as ProductName, p.price, p.quantity
+                             FROM Category cf
+                             LEFT JOIN Product p ON cf.id = p.categoryFurniture_id
+                             ORDER BY cf.id, p.id";
+
+                    SqlCommand command = new SqlCommand(query, connection);
+                    SqlDataReader reader = command.ExecuteReader();
+
+                    int currentCategoryId = -1;
+                    TreeViewItem currentCategoryItem = null;
+
+                    while (reader.Read())
+                    {
+                        int categoryId = reader.GetInt32(reader.GetOrdinal("CategoryId"));
+                        string categoryName = reader.GetString(reader.GetOrdinal("CategoryName"));
+
+                        if (categoryId != currentCategoryId)
+                        {
+                            currentCategoryItem = new TreeViewItem
+                            {
+                                Header = categoryName,
+                                FontSize = 20,
+                                IsExpanded = false
+                            };
+                            ManagerCategoriesTreeView.Items.Add(currentCategoryItem);
+                            currentCategoryId = categoryId;
+                        }
+                        if (!reader.IsDBNull(reader.GetOrdinal("ProductId")))
+                        {
+                            int productId = reader.GetInt32(reader.GetOrdinal("ProductId"));
+                            string productName = reader.GetString(reader.GetOrdinal("ProductName"));
+                            decimal price = reader.GetDecimal(reader.GetOrdinal("price"));
+                            int quantity = reader.GetInt32(reader.GetOrdinal("quantity"));
+
+                            TreeViewItem productItem = new TreeViewItem
+                            {
+                                Header = $"Товар: {productName}; Цена: {price:C}; Товаров на складе: {quantity}",
+                                FontSize = 16,
+                                IsExpanded = false,
+                                Tag = productId 
+                            };
+                            currentCategoryItem?.Items.Add(productItem);
+                        }
+                    }
+
+                    reader.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при загрузке данных: " + ex.Message);
+            }
+
+        }
+        private int? selectedProductId = null; 
+
+        private void ManagerCategoriesTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (ManagerCategoriesTreeView.SelectedItem is TreeViewItem selectedItem && selectedItem.Tag is int productId)
+            {
+                selectedProductId = productId; 
+                QuantityControlPanel.Visibility = Visibility.Visible; 
+                using (SqlConnection connection = GetDatabaseConnection())
+                {
+                    connection.Open();
+                    string query = "SELECT quantity FROM Product WHERE id = @ProductId";
+                    SqlCommand command = new SqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@ProductId", productId);
+
+                    int quantity = (int)command.ExecuteScalar();
+                    SelectedProductQuantityText.Text = $"Количество: {quantity}";
+                }
+            }
+            else
+            {
+                selectedProductId = null;
+                SelectedProductQuantityText.Text = "Количество: ";
+                QuantityControlPanel.Visibility = Visibility.Collapsed;
+            }
+        }
+        private void IncreaseQuantityButton_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateProductQuantity(1); 
+        }
+
+        private void DecreaseQuantityButton_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateProductQuantity(-1);
+        }
+
+        private void UpdateProductQuantity(int change)
+        {
+            if (selectedProductId.HasValue)
+            {
+                try
+                {
+                    using (SqlConnection connection = GetDatabaseConnection())
+                    {
+                        connection.Open();
+                        string query = "UPDATE Product SET quantity = quantity + @Change WHERE id = @ProductId";
+                        SqlCommand command = new SqlCommand(query, connection);
+                        command.Parameters.AddWithValue("@Change", change);
+                        command.Parameters.AddWithValue("@ProductId", selectedProductId.Value);
+                        command.ExecuteNonQuery();                       
+                        query = "SELECT quantity FROM Product WHERE id = @ProductId";
+                        command = new SqlCommand(query, connection);
+                        command.Parameters.AddWithValue("@ProductId", selectedProductId.Value);
+                        int newQuantity = (int)command.ExecuteScalar();
+                        UpdateTreeViewItemText(newQuantity);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при изменении количества: " + ex.Message);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите товар для изменения количества", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        private void UpdateTreeViewItemText(int newQuantity)
+        {
+            if (ManagerCategoriesTreeView.SelectedItem is TreeViewItem selectedItem)
+            {
+
+                string headerText = selectedItem.Header.ToString();
+                int index = headerText.LastIndexOf("Товаров на складе: ");
+                if (index != -1)
+                {
+                    headerText = headerText.Substring(0, index) + $"Товаров на складе: {newQuantity}";
+                    selectedItem.Header = headerText;
+                }
+
+                
+                SelectedProductQuantityText.Text = $"Количество: {newQuantity}";
             }
         }
     }

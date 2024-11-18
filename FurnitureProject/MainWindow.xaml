@@ -83,6 +83,23 @@
             <TreeView x:Name="CategoriesTreeView" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="400" Margin="15"/>
         </StackPanel>
         <StackPanel x:Name="ManagerPanel" Visibility="Collapsed">
+            <Grid>
+                <Button x:Name="BackAuthorizationButtonManager" Width="24" Height="24" HorizontalAlignment="Left" BorderThickness="0" Background="Transparent" Margin="25,35,15,15" VerticalAlignment="Center" Click="BackToAuthorization_Click">
+                    <Button.Content>
+                        <Image Source="/BackAccount.png" />
+                    </Button.Content>
+                </Button>
+                <TextBlock Text="Управление ассортиментом товаров" FontSize="32" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="55,20,55,10"/>
+            </Grid>
+            <Border Margin="10 0 10 0" Grid.Row="1" CornerRadius="10" Background="White">
+                <TreeView x:Name="ManagerCategoriesTreeView" HorizontalAlignment="Stretch" BorderBrush="White" VerticalAlignment="Top" Height="400" Margin="15" SelectedItemChanged="ManagerCategoriesTreeView_SelectedItemChanged"/>
+            </Border>
+
+            <StackPanel x:Name="QuantityControlPanel" Orientation="Horizontal" HorizontalAlignment="Center" Margin="15" Visibility="Collapsed">
+                <Button x:Name="IncreaseQuantityButton" Style="{StaticResource ButtonBorderRound}" Content="Увеличить" Width="140" Height="40" Click="IncreaseQuantityButton_Click" Margin="0,0,10,0"/>
+                <Button x:Name="DecreaseQuantityButton" Style="{StaticResource ButtonBorderRound}" Content="Уменьшить" Width="140" Height="40" Click="DecreaseQuantityButton_Click"/>
+                <TextBlock x:Name="SelectedProductQuantityText" Text="Количество: " Margin="10,2,0,0" FontSize="24"/>
+            </StackPanel>
 
         </StackPanel>
         <StackPanel x:Name="AdministratorPanel" Visibility="Collapsed">
