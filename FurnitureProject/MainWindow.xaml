@@ -83,6 +83,7 @@
             <TreeView x:Name="CategoriesTreeView" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="400" Margin="15"/>
         </StackPanel>
         <StackPanel x:Name="ManagerPanel" Visibility="Collapsed">
+            <TreeView x:Name="ManagerCategoriesTreeView" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="400" Margin="15" />
 
         </StackPanel>
         <StackPanel x:Name="AdministratorPanel" Visibility="Collapsed">
