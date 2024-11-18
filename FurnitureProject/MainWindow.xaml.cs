@@ -292,5 +292,47 @@ namespace FurnitureProject
                 QuantityControlPanel.Visibility = Visibility.Collapsed;
             }
         }
+        private void IncreaseQuantityButton_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateProductQuantity(1); 
+        }
+
+        private void DecreaseQuantityButton_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateProductQuantity(-1);
+        }
+
+        private void UpdateProductQuantity(int change)
+        {
+            if (selectedProductId.HasValue)
+            {
+                try
+                {
+                    using (SqlConnection connection = GetDatabaseConnection())
+                    {
+                        connection.Open();
+                        string query = "UPDATE Product SET quantity = quantity + @Change WHERE id = @ProductId";
+                        SqlCommand command = new SqlCommand(query, connection);
+                        command.Parameters.AddWithValue("@Change", change);
+                        command.Parameters.AddWithValue("@ProductId", selectedProductId.Value);
+                        command.ExecuteNonQuery();                       
+                        query = "SELECT quantity FROM Product WHERE id = @ProductId";
+                        command = new SqlCommand(query, connection);
+                        command.Parameters.AddWithValue("@ProductId", selectedProductId.Value);
+                        int newQuantity = (int)command.ExecuteScalar();
+                        
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при изменении количества: " + ex.Message);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите товар для изменения количества", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        
     }
 }

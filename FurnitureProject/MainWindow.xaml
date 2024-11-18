@@ -94,8 +94,8 @@
             <TreeView x:Name="ManagerCategoriesTreeView" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="400" Margin="15" SelectedItemChanged="ManagerCategoriesTreeView_SelectedItemChanged"/>
 
             <StackPanel x:Name="QuantityControlPanel" Orientation="Horizontal" HorizontalAlignment="Center" Margin="15" Visibility="Collapsed">
-                <Button x:Name="IncreaseQuantityButton" Content="Увеличить" Width="100" Height="30" />
-                <Button x:Name="DecreaseQuantityButton" Content="Уменьшить" Width="100" Height="30" />
+                <Button x:Name="IncreaseQuantityButton" Content="Увеличить" Width="100" Height="30" Click="IncreaseQuantityButton_Click"/>
+                <Button x:Name="DecreaseQuantityButton" Content="Уменьшить" Width="100" Height="30" Click="DecreaseQuantityButton_Click"/>
                 <TextBlock x:Name="SelectedProductQuantityText" Text="Количество: " Margin="10,0,0,0" FontSize="16"/>
             </StackPanel>
 
