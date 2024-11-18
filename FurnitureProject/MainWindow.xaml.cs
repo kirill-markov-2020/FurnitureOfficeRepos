@@ -320,7 +320,7 @@ namespace FurnitureProject
                         command = new SqlCommand(query, connection);
                         command.Parameters.AddWithValue("@ProductId", selectedProductId.Value);
                         int newQuantity = (int)command.ExecuteScalar();
-                        
+                        UpdateTreeViewItemText(newQuantity);
                     }
                 }
                 catch (Exception ex)
@@ -333,6 +333,22 @@ namespace FurnitureProject
                 MessageBox.Show("Пожалуйста, выберите товар для изменения количества", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
-        
+        private void UpdateTreeViewItemText(int newQuantity)
+        {
+            if (ManagerCategoriesTreeView.SelectedItem is TreeViewItem selectedItem)
+            {
+
+                string headerText = selectedItem.Header.ToString();
+                int index = headerText.LastIndexOf("Товаров на складе: ");
+                if (index != -1)
+                {
+                    headerText = headerText.Substring(0, index) + $"Товаров на складе: {newQuantity}";
+                    selectedItem.Header = headerText;
+                }
+
+                
+                SelectedProductQuantityText.Text = $"Количество: {newQuantity}";
+            }
+        }
     }
 }
