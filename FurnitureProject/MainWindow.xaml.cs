@@ -264,6 +264,33 @@ namespace FurnitureProject
             {
                 MessageBox.Show("Ошибка при загрузке данных: " + ex.Message);
             }
+
+        }
+        private int? selectedProductId = null; 
+
+        private void ManagerCategoriesTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (ManagerCategoriesTreeView.SelectedItem is TreeViewItem selectedItem && selectedItem.Tag is int productId)
+            {
+                selectedProductId = productId; 
+                QuantityControlPanel.Visibility = Visibility.Visible; 
+                using (SqlConnection connection = GetDatabaseConnection())
+                {
+                    connection.Open();
+                    string query = "SELECT quantity FROM Product WHERE id = @ProductId";
+                    SqlCommand command = new SqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@ProductId", productId);
+
+                    int quantity = (int)command.ExecuteScalar();
+                    SelectedProductQuantityText.Text = $"Количество: {quantity}";
+                }
+            }
+            else
+            {
+                selectedProductId = null;
+                SelectedProductQuantityText.Text = "Количество: ";
+                QuantityControlPanel.Visibility = Visibility.Collapsed;
+            }
         }
     }
 }

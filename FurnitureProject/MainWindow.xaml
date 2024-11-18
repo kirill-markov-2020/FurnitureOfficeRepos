@@ -91,7 +91,7 @@
                 </Button>
                 <TextBlock Text="Управление ассортиментом товаров" FontSize="32" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="55,20,55,10"/>
             </Grid>
-            <TreeView x:Name="ManagerCategoriesTreeView" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="400" Margin="15" />
+            <TreeView x:Name="ManagerCategoriesTreeView" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="400" Margin="15" SelectedItemChanged="ManagerCategoriesTreeView_SelectedItemChanged"/>
 
             <StackPanel x:Name="QuantityControlPanel" Orientation="Horizontal" HorizontalAlignment="Center" Margin="15" Visibility="Collapsed">
                 <Button x:Name="IncreaseQuantityButton" Content="Увеличить" Width="100" Height="30" />
