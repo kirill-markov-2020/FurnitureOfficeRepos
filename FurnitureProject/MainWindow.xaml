@@ -116,6 +116,8 @@
                 <Button x:Name="AddProductButton" Content="Добавить товар" HorizontalAlignment="Center" Style="{StaticResource ButtonBorderRound}" VerticalAlignment="Center" Width="200" Height="50" FontSize="20" Click="AddProductButton_Click" Margin="10"/>
                 <Button x:Name="AddCategoryButton" Content="Добавить категорию" HorizontalAlignment="Center" Style="{StaticResource ButtonBorderRound}" VerticalAlignment="Center" Width="200" Height="50" FontSize="20" Click="AddCategoryButton_Click" Margin="10"/>
                 <Button x:Name="DeleteCategoryButton" Content="Удалить категорию" HorizontalAlignment="Center" Style="{StaticResource ButtonBorderRound}" VerticalAlignment="Center" Width="200" Height="50" FontSize="20" Click="DeleteCategoryButton_Click" Margin="10"/>
+                <Button x:Name="DeleteProductButton" Content="Удалить товар" HorizontalAlignment="Center" Style="{StaticResource ButtonBorderRound}" VerticalAlignment="Center" Width="200" Height="50" FontSize="20" Click="DeleteProductButton_Click" Margin="10"/>
+
             </StackPanel>
 
         </StackPanel>

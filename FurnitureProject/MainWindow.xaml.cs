@@ -613,6 +613,59 @@ namespace FurnitureProject
             AdministratorPanel.Visibility = Visibility.Visible;
         }
 
+        private void DeleteProductButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (AdminCategoriesTreeView.SelectedItem is TreeViewItem selectedItem && selectedItem.Parent != AdminCategoriesTreeView)
+            {
+                string productInfo = selectedItem.Header.ToString();
+                string[] productParts = productInfo.Split(new string[] { "; Цена: ", "; Кол-во: " }, StringSplitOptions.None);
+                string productName = productParts[0].Replace("Товар: ", "");
+                MessageBoxResult result = MessageBox.Show(
+                    $"Вы уверены, что хотите удалить товар '{productName}'?",
+                    "Подтверждение удаления",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    try
+                    {
+                        string productIdQuery = "SELECT id FROM Product WHERE name = @ProductName";
+                        using (SqlConnection connection = GetDatabaseConnection())
+                        {
+                            connection.Open();
+                            SqlCommand command = new SqlCommand(productIdQuery, connection);
+                            command.Parameters.AddWithValue("@ProductName", productName);
+                            object productIdObj = command.ExecuteScalar();
+
+                            if (productIdObj != null)
+                            {
+                                int productId = Convert.ToInt32(productIdObj);
+                                string deleteProductQuery = "DELETE FROM Product WHERE id = @ProductId";
+                                SqlCommand deleteCommand = new SqlCommand(deleteProductQuery, connection);
+                                deleteCommand.Parameters.AddWithValue("@ProductId", productId);
+                                deleteCommand.ExecuteNonQuery();
+                                MessageBox.Show($"Товар '{productName}' успешно удален.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                                LoadAdminCategoriesAndProducts();
+                            }
+                            else
+                            {
+                                MessageBox.Show("Товар не найден в базе данных.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Ошибка при удалении товара: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите товар для удаления.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
 
 
     }
