@@ -551,6 +551,63 @@ namespace FurnitureProject
             }
         }
 
+        private void SaveProductButton_Click(object sender, RoutedEventArgs e)
+        {
+            string productName = ProductNameTextBox.Text.Trim();
+            string categoryName = ProductCategoryTextBox.Text;
+            if (!decimal.TryParse(ProductPriceTextBox.Text, out decimal price) || price <= 0)
+            {
+                MessageBox.Show("Введите корректную стоимость.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (!int.TryParse(ProductQuantityTextBox.Text, out int quantity) || quantity < 0)
+            {
+                MessageBox.Show("Введите корректное количество.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                using (SqlConnection connection = GetDatabaseConnection())
+                {
+                    connection.Open();
+                    string getLastIdQuery = "SELECT MAX(id) FROM Product";
+                    SqlCommand getLastIdCommand = new SqlCommand(getLastIdQuery, connection);
+                    object result = getLastIdCommand.ExecuteScalar();
+                    int newProductId = (result != DBNull.Value) ? Convert.ToInt32(result) + 1 : 1;
+                    string insertQuery = @"
+                        INSERT INTO Product (id, name, categoryFurniture_id, price, quantity)
+                        SELECT @ProductId, @ProductName, id, @Price, @Quantity
+                        FROM Category 
+                        WHERE name = @CategoryName;
+                    ";
+                    SqlCommand insertCommand = new SqlCommand(insertQuery, connection);
+                    insertCommand.Parameters.AddWithValue("@ProductId", newProductId);
+                    insertCommand.Parameters.AddWithValue("@ProductName", productName);
+                    insertCommand.Parameters.AddWithValue("@CategoryName", categoryName);
+                    insertCommand.Parameters.AddWithValue("@Price", price);
+                    insertCommand.Parameters.AddWithValue("@Quantity", quantity);
+                    int rowsAffected = insertCommand.ExecuteNonQuery();
+                    if (rowsAffected > 0)
+                    {
+                        MessageBox.Show("Товар успешно добавлен.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Ошибка: Категория не найдена.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                AddProductPanel.Visibility = Visibility.Collapsed;
+                AdministratorPanel.Visibility = Visibility.Visible;
+                LoadAdminCategoriesAndProducts();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при добавлении товара: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+
 
     }
 }
