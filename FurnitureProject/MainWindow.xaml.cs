@@ -35,12 +35,60 @@ namespace FurnitureProject
                 TextBoxInputLogin.Foreground = Brushes.Black;
             }
         }
+        private void ProductNameTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (ProductNameTextBox.Text == "Название товара:")
+            {
+                ProductNameTextBox.Text = "";
+                ProductNameTextBox.Foreground = Brushes.Black;
+            }
+        }
+        private void ProductPriceTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (ProductPriceTextBox.Text == "Стоимость:")
+            {
+                ProductPriceTextBox.Text = "";
+                ProductPriceTextBox.Foreground = Brushes.Black;
+            }
+        }
+        private void ProductQuantityTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (ProductQuantityTextBox.Text == "Количество:")
+            {
+                ProductQuantityTextBox.Text = "";
+                ProductQuantityTextBox.Foreground = Brushes.Black;
+            }
+        }
         private void TextBoxInputLogin_LostFocus(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(TextBoxInputLogin.Text))
             {
                 TextBoxInputLogin.Text = "Введите логин";
                 TextBoxInputLogin.Foreground = Brushes.Gray;
+            }
+        }
+        private void ProductNameTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(ProductNameTextBox.Text))
+            {
+                ProductNameTextBox.Text = "Название товара:";
+                ProductNameTextBox.Foreground = Brushes.Gray;
+            }
+        }
+        private void ProductPriceTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(ProductPriceTextBox.Text))
+            {
+                ProductPriceTextBox.Text = "Стоимость:";
+                ProductPriceTextBox.Foreground = Brushes.Gray;
+            }
+        }
+        private void ProductQuantityTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(ProductQuantityTextBox.Text))
+            {
+                ProductQuantityTextBox.Text = "Количество:";
+                ProductQuantityTextBox.Foreground = Brushes.Gray;
             }
         }
         private void PasswordBox_GotFocus(object sender, RoutedEventArgs e)
@@ -575,12 +623,7 @@ namespace FurnitureProject
                     SqlCommand getLastIdCommand = new SqlCommand(getLastIdQuery, connection);
                     object result = getLastIdCommand.ExecuteScalar();
                     int newProductId = (result != DBNull.Value) ? Convert.ToInt32(result) + 1 : 1;
-                    string insertQuery = @"
-                        INSERT INTO Product (id, name, categoryFurniture_id, price, quantity)
-                        SELECT @ProductId, @ProductName, id, @Price, @Quantity
-                        FROM Category 
-                        WHERE name = @CategoryName;
-                    ";
+                    string insertQuery = @"INSERT INTO Product (id, name, categoryFurniture_id, price, quantity) SELECT @ProductId, @ProductName, id, @Price, @Quantity FROM Category  WHERE name = @CategoryName;";
                     SqlCommand insertCommand = new SqlCommand(insertQuery, connection);
                     insertCommand.Parameters.AddWithValue("@ProductId", newProductId);
                     insertCommand.Parameters.AddWithValue("@ProductName", productName);
@@ -621,10 +664,7 @@ namespace FurnitureProject
                 string[] productParts = productInfo.Split(new string[] { "; Цена: ", "; Кол-во: " }, StringSplitOptions.None);
                 string productName = productParts[0].Replace("Товар: ", "");
                 MessageBoxResult result = MessageBox.Show(
-                    $"Вы уверены, что хотите удалить товар '{productName}'?",
-                    "Подтверждение удаления",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
+                    $"Вы уверены, что хотите удалить товар '{productName}'?", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
                 if (result == MessageBoxResult.Yes)
                 {
