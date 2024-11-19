@@ -607,6 +607,12 @@ namespace FurnitureProject
             }
         }
 
+        private void CancelAddProductButton_Click(object sender, RoutedEventArgs e)
+        {
+            AddProductPanel.Visibility = Visibility.Collapsed;
+            AdministratorPanel.Visibility = Visibility.Visible;
+        }
+
 
 
     }
