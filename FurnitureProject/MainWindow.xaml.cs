@@ -134,7 +134,7 @@ namespace FurnitureProject
 
         private SqlConnection GetDatabaseConnection()
         {
-            connection = new SqlConnection("Server=KIRILL-MARKOV;Database=Furniture;Integrated Security=True;");
+            connection = new SqlConnection("Server=KIRILL-MARKOV;Database=FurnitureData;Integrated Security=True;");
             return connection;
         }
 
@@ -447,9 +447,13 @@ namespace FurnitureProject
                 using (SqlConnection connection = GetDatabaseConnection())
                 {
                     connection.Open();
-
-                    string query = "INSERT INTO Category (name) VALUES (@CategoryName)";
+                    string getMaxIdQuery = "SELECT MAX(id) FROM Category";
+                    SqlCommand getMaxIdCommand = new SqlCommand(getMaxIdQuery, connection);
+                    object maxIdObj = getMaxIdCommand.ExecuteScalar();
+                    int newCategoryId = maxIdObj != DBNull.Value ? Convert.ToInt32(maxIdObj) + 1 : 1; 
+                    string query = "INSERT INTO Category (id, name) VALUES (@CategoryId, @CategoryName)";
                     SqlCommand command = new SqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@CategoryId", newCategoryId);
                     command.Parameters.AddWithValue("@CategoryName", categoryName);
                     command.ExecuteNonQuery();
 
