@@ -353,14 +353,6 @@ namespace FurnitureProject
         }
 
 
-
-
-
-        // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-
-
-
-
         private void LoadAdminCategoriesAndProducts()
         {
             AdminCategoriesTreeView.Items.Clear();
@@ -527,6 +519,35 @@ namespace FurnitureProject
             else
             {
                 MessageBox.Show("Пожалуйста, выберите категорию для удаления.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+
+
+        // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+
+        private void AdminCategoriesTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (AdminCategoriesTreeView.SelectedItem is TreeViewItem selectedItem && selectedItem.Parent == AdminCategoriesTreeView)
+            {
+                AddProductButton.IsEnabled = true;
+            }
+            else
+            {
+                AddProductButton.IsEnabled = false;
+            }
+        }
+
+
+
+        private void AddProductButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (AdminCategoriesTreeView.SelectedItem is TreeViewItem selectedItem)
+            {
+                ProductCategoryTextBox.Text = selectedItem.Header.ToString();
+                AddProductPanel.Visibility = Visibility.Visible;
+                AdministratorPanel.Visibility = Visibility.Collapsed;
             }
         }
 

@@ -113,6 +113,7 @@
             </Grid>
             <TreeView x:Name="AdminCategoriesTreeView" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="400" Margin="15"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                <Button x:Name="AddProductButton" Content="Добавить товар" HorizontalAlignment="Center" Style="{StaticResource ButtonBorderRound}" VerticalAlignment="Center" Width="200" Height="50" FontSize="20" Click="AddProductButton_Click" Margin="10" IsEnabled="False"/>
                 <Button x:Name="AddCategoryButton" Content="Добавить категорию" HorizontalAlignment="Center" Style="{StaticResource ButtonBorderRound}" VerticalAlignment="Center" Width="200" Height="50" FontSize="20" Click="AddCategoryButton_Click" Margin="10"/>
                 <Button x:Name="DeleteCategoryButton" Content="Удалить категорию" HorizontalAlignment="Center" Style="{StaticResource ButtonBorderRound}" VerticalAlignment="Center" Width="200" Height="50" FontSize="20" Click="DeleteCategoryButton_Click" Margin="10"/>
             </StackPanel>
