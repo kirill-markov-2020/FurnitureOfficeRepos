@@ -582,9 +582,16 @@ namespace FurnitureProject
         {
             if (AdminCategoriesTreeView.SelectedItem is TreeViewItem selectedItem)
             {
+
                 ProductCategoryTextBox.Text = selectedItem.Header.ToString();
                 AddProductPanel.Visibility = Visibility.Visible;
                 AdministratorPanel.Visibility = Visibility.Collapsed;
+                ProductQuantityTextBox.Text = "Количество:";
+                ProductQuantityTextBox.Foreground = Brushes.Gray;
+                ProductPriceTextBox.Text = "Стоимость:";
+                ProductPriceTextBox.Foreground = Brushes.Gray;
+                ProductNameTextBox.Text = "Название товара:";
+                ProductNameTextBox.Foreground = Brushes.Gray;
             }
         }
 
