@@ -182,7 +182,7 @@ namespace FurnitureProject
 
         private SqlConnection GetDatabaseConnection()
         {
-            connection = new SqlConnection("Server=KIRILL-MARKOV;Database=FurnitureData;Integrated Security=True;");
+            connection = new SqlConnection("Server=KIRILL-MARKOV;Database=DataBase;Integrated Security=True;");
             return connection;
         }
 
@@ -487,19 +487,13 @@ namespace FurnitureProject
                 using (SqlConnection connection = GetDatabaseConnection())
                 {
                     connection.Open();
-                    string getMaxIdQuery = "SELECT MAX(id) FROM Category";
-                    SqlCommand getMaxIdCommand = new SqlCommand(getMaxIdQuery, connection);
-                    object maxIdObj = getMaxIdCommand.ExecuteScalar();
-                    int newCategoryId = maxIdObj != DBNull.Value ? Convert.ToInt32(maxIdObj) + 1 : 1; 
-                    string query = "INSERT INTO Category (id, name) VALUES (@CategoryId, @CategoryName)";
+                    string query = "INSERT INTO Category (name) VALUES (@CategoryName)"; // id не указываем, пусть база сама присвоит
                     SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@CategoryId", newCategoryId);
                     command.Parameters.AddWithValue("@CategoryName", categoryName);
                     command.ExecuteNonQuery();
 
                     MessageBox.Show("Категория успешно добавлена.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
-
                 LoadAdminCategoriesAndProducts();
                 AddCategoryPanel.Visibility = Visibility.Collapsed;
                 AdministratorPanel.Visibility = Visibility.Visible;
@@ -570,11 +564,6 @@ namespace FurnitureProject
             }
         }
 
-
-
-        // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-
-
         private void AdminCategoriesTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             if (AdminCategoriesTreeView.SelectedItem is TreeViewItem selectedItem && selectedItem.Parent == AdminCategoriesTreeView)
@@ -603,6 +592,7 @@ namespace FurnitureProject
         {
             string productName = ProductNameTextBox.Text.Trim();
             string categoryName = ProductCategoryTextBox.Text;
+
             if (!decimal.TryParse(ProductPriceTextBox.Text, out decimal price) || price <= 0)
             {
                 MessageBox.Show("Введите корректную стоимость.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -619,18 +609,21 @@ namespace FurnitureProject
                 using (SqlConnection connection = GetDatabaseConnection())
                 {
                     connection.Open();
-                    string getLastIdQuery = "SELECT MAX(id) FROM Product";
-                    SqlCommand getLastIdCommand = new SqlCommand(getLastIdQuery, connection);
-                    object result = getLastIdCommand.ExecuteScalar();
-                    int newProductId = (result != DBNull.Value) ? Convert.ToInt32(result) + 1 : 1;
-                    string insertQuery = @"INSERT INTO Product (id, name, categoryFurniture_id, price, quantity) SELECT @ProductId, @ProductName, id, @Price, @Quantity FROM Category  WHERE name = @CategoryName;";
+
+                    string insertQuery = @"
+                INSERT INTO Product (name, categoryFurniture_id, price, quantity)
+                SELECT @ProductName, id, @Price, @Quantity
+                FROM Category
+                WHERE name = @CategoryName";
+
                     SqlCommand insertCommand = new SqlCommand(insertQuery, connection);
-                    insertCommand.Parameters.AddWithValue("@ProductId", newProductId);
                     insertCommand.Parameters.AddWithValue("@ProductName", productName);
                     insertCommand.Parameters.AddWithValue("@CategoryName", categoryName);
                     insertCommand.Parameters.AddWithValue("@Price", price);
                     insertCommand.Parameters.AddWithValue("@Quantity", quantity);
+
                     int rowsAffected = insertCommand.ExecuteNonQuery();
+
                     if (rowsAffected > 0)
                     {
                         MessageBox.Show("Товар успешно добавлен.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -640,6 +633,7 @@ namespace FurnitureProject
                         MessageBox.Show("Ошибка: Категория не найдена.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
+
                 AddProductPanel.Visibility = Visibility.Collapsed;
                 AdministratorPanel.Visibility = Visibility.Visible;
                 LoadAdminCategoriesAndProducts();
