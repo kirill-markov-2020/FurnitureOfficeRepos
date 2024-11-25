@@ -375,6 +375,7 @@ namespace FurnitureProject
 
         private void SaveCategoryButton_Click(object sender, RoutedEventArgs e)
         {
+
             string categoryName = CategoryNameTextBox.Text.Trim();
 
             if (string.IsNullOrEmpty(categoryName))
@@ -382,19 +383,18 @@ namespace FurnitureProject
                 MessageBox.Show("Название категории не может быть пустым.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
+            using (var dbContext = new AppDbContext())
             try
             {
-                using (SqlConnection connection = GetDatabaseConnection())
+                var category = new Category
                 {
-                    connection.Open();
-                    string query = "INSERT INTO Category (name) VALUES (@CategoryName)"; // id не указываем, пусть база сама присвоит
-                    SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@CategoryName", categoryName);
-                    command.ExecuteNonQuery();
+                    Name = categoryName
+                };
 
-                    MessageBox.Show("Категория успешно добавлена.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
+                dbContext.Categories.Add(category);
+                dbContext.SaveChanges();
+
+                MessageBox.Show("Категория успешно добавлена.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
                 LoadAdminCategoriesAndProducts();
                 AddCategoryPanel.Visibility = Visibility.Collapsed;
                 AdministratorPanel.Visibility = Visibility.Visible;
