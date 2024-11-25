@@ -501,40 +501,31 @@ namespace FurnitureProject
                 MessageBox.Show("Введите корректное количество.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
+            using (var dbContext = new AppDbContext())
             try
             {
-                using (SqlConnection connection = GetDatabaseConnection())
+                var category = dbContext.Categories.FirstOrDefault(c => c.Name == categoryName);
+                if (category != null)
                 {
-                    connection.Open();
-
-                    string insertQuery = @"
-                INSERT INTO Product (name, categoryFurniture_id, price, quantity)
-                SELECT @ProductName, id, @Price, @Quantity
-                FROM Category
-                WHERE name = @CategoryName";
-
-                    SqlCommand insertCommand = new SqlCommand(insertQuery, connection);
-                    insertCommand.Parameters.AddWithValue("@ProductName", productName);
-                    insertCommand.Parameters.AddWithValue("@CategoryName", categoryName);
-                    insertCommand.Parameters.AddWithValue("@Price", price);
-                    insertCommand.Parameters.AddWithValue("@Quantity", quantity);
-
-                    int rowsAffected = insertCommand.ExecuteNonQuery();
-
-                    if (rowsAffected > 0)
+                    var product = new Product
                     {
-                        MessageBox.Show("Товар успешно добавлен.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                    else
-                    {
-                        MessageBox.Show("Ошибка: Категория не найдена.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
+                        Name = productName,
+                        Price = price,
+                        Quantity = quantity,
+                        CategoryFurniture_Id = category.Id
+                    };
+
+                    dbContext.Products.Add(product);
+                    dbContext.SaveChanges();
+                    MessageBox.Show("Товар успешно добавлен.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    LoadAdminCategoriesAndProducts();
+                    AddProductPanel.Visibility = Visibility.Collapsed;
+                    AdministratorPanel.Visibility = Visibility.Visible;
                 }
-
-                AddProductPanel.Visibility = Visibility.Collapsed;
-                AdministratorPanel.Visibility = Visibility.Visible;
-                LoadAdminCategoriesAndProducts();
+                else
+                {
+                    MessageBox.Show("Ошибка: Категория не найдена.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
             catch (Exception ex)
             {
