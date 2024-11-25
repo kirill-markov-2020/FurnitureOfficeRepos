@@ -180,66 +180,38 @@ namespace FurnitureProject
 
         private void LoadCategories()
         {
-            CategoriesTreeView.Items.Clear();
-
-            try
+            using (var dbContext = new AppDbContext())
             {
-                using (SqlConnection connection = GetDatabaseConnection())
+                var categories = dbContext.Categories
+                    .Include(c => c.Products)
+                    .ToList();
+
+                CategoriesTreeView.Items.Clear();
+
+                foreach (var category in categories)
                 {
-                    connection.Open();
-
-                    string query = @"SELECT cf.id as CategoryId, cf.name as CategoryName, 
-                                        p.id as ProductId, p.name as ProductName, p.price, p.quantity
-                                     FROM Category cf
-                                     LEFT JOIN Product p ON cf.id = p.categoryFurniture_id
-                                     ORDER BY cf.id, p.id";
-
-                    SqlCommand command = new SqlCommand(query, connection);
-                    SqlDataReader reader = command.ExecuteReader();
-
-                    int currentCategoryId = -1;
-                    TreeViewItem currentCategoryItem = null;
-
-                    while (reader.Read())
+                    var categoryNode = new TreeViewItem
                     {
-                        int categoryId = reader.GetInt32(reader.GetOrdinal("CategoryId"));
-                        string categoryName = reader.GetString(reader.GetOrdinal("CategoryName"));
+                        Header = category.Name,
+                        FontSize = 20,
+                        IsExpanded = false,
+                        Tag = category
+                    };
 
-                        if (categoryId != currentCategoryId)
+                    foreach (var product in category.Products)
+                    {
+                        var productNode = new TreeViewItem
                         {
-                            currentCategoryItem = new TreeViewItem
-                            {
-                                Header = categoryName,
-                                FontSize = 20,
-                                IsExpanded = false
-                            };
-                            CategoriesTreeView.Items.Add(currentCategoryItem);
-                            currentCategoryId = categoryId;
-                        }
+                            Header = $"Товар: {product.Name}; Цена: {product.Price:C}; Товаров на складе: {product.Quantity}",
+                            FontSize = 16,
+                            Tag = product
+                        };
 
-                        if (!reader.IsDBNull(reader.GetOrdinal("ProductId")))
-                        {
-                            string name = reader.GetString(reader.GetOrdinal("ProductName"));
-                            decimal price = reader.GetDecimal(reader.GetOrdinal("price"));
-                            int quantity = reader.GetInt32(reader.GetOrdinal("quantity"));
-
-                            TreeViewItem productItem = new TreeViewItem
-                            {
-                                Header = $"Товар: {name}; Цена: {price:C}; Товаров на складе: {quantity}",
-                                FontSize = 16,
-                                IsExpanded = false
-                            };
-
-                            currentCategoryItem?.Items.Add(productItem);
-                        }
+                        categoryNode.Items.Add(productNode);
                     }
 
-                    reader.Close();
+                    CategoriesTreeView.Items.Add(categoryNode);
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Ошибка при загрузке данных: " + ex.Message);
             }
         }
         private void LoadManagerCategoriesAndProducts()
