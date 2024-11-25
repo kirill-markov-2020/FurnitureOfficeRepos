@@ -35,12 +35,60 @@ namespace FurnitureProject
                 TextBoxInputLogin.Foreground = Brushes.Black;
             }
         }
+        private void ProductNameTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (ProductNameTextBox.Text == "Название товара:")
+            {
+                ProductNameTextBox.Text = "";
+                ProductNameTextBox.Foreground = Brushes.Black;
+            }
+        }
+        private void ProductPriceTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (ProductPriceTextBox.Text == "Стоимость:")
+            {
+                ProductPriceTextBox.Text = "";
+                ProductPriceTextBox.Foreground = Brushes.Black;
+            }
+        }
+        private void ProductQuantityTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (ProductQuantityTextBox.Text == "Количество:")
+            {
+                ProductQuantityTextBox.Text = "";
+                ProductQuantityTextBox.Foreground = Brushes.Black;
+            }
+        }
         private void TextBoxInputLogin_LostFocus(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(TextBoxInputLogin.Text))
             {
                 TextBoxInputLogin.Text = "Введите логин";
                 TextBoxInputLogin.Foreground = Brushes.Gray;
+            }
+        }
+        private void ProductNameTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(ProductNameTextBox.Text))
+            {
+                ProductNameTextBox.Text = "Название товара:";
+                ProductNameTextBox.Foreground = Brushes.Gray;
+            }
+        }
+        private void ProductPriceTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(ProductPriceTextBox.Text))
+            {
+                ProductPriceTextBox.Text = "Стоимость:";
+                ProductPriceTextBox.Foreground = Brushes.Gray;
+            }
+        }
+        private void ProductQuantityTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(ProductQuantityTextBox.Text))
+            {
+                ProductQuantityTextBox.Text = "Количество:";
+                ProductQuantityTextBox.Foreground = Brushes.Gray;
             }
         }
         private void PasswordBox_GotFocus(object sender, RoutedEventArgs e)
@@ -73,6 +121,7 @@ namespace FurnitureProject
                 ManagerPanel.Visibility = Visibility.Collapsed;
                 AdministratorPanel.Visibility = Visibility.Visible;
                 ConsultantPanel.Visibility = Visibility.Collapsed;
+                LoadAdminCategoriesAndProducts();
             }
             else if (TextBoxInputLogin.Text == "ConsultantLogin" && PasswordBox.Password == "ConsultantPassword")
             {
@@ -133,7 +182,7 @@ namespace FurnitureProject
 
         private SqlConnection GetDatabaseConnection()
         {
-            connection = new SqlConnection("Server=KIRILL-MARKOV;Database=Furniture;Integrated Security=True;");
+            connection = new SqlConnection("Server=KIRILL-MARKOV;Database=DataBase;Integrated Security=True;");
             return connection;
         }
 
@@ -149,7 +198,7 @@ namespace FurnitureProject
 
                     string query = @"SELECT cf.id as CategoryId, cf.name as CategoryName, 
                                         p.id as ProductId, p.name as ProductName, p.price, p.quantity
-                                     FROM CategoryFurniture cf
+                                     FROM Category cf
                                      LEFT JOIN Product p ON cf.id = p.categoryFurniture_id
                                      ORDER BY cf.id, p.id";
 
@@ -350,5 +399,315 @@ namespace FurnitureProject
                 SelectedProductQuantityText.Text = $"Количество: {newQuantity}";
             }
         }
+
+
+        private void LoadAdminCategoriesAndProducts()
+        {
+            AdminCategoriesTreeView.Items.Clear();
+
+            try
+            {
+                using (SqlConnection connection = GetDatabaseConnection())
+                {
+                    connection.Open();
+
+                    string query = @"SELECT cf.id as CategoryId, cf.name as CategoryName, 
+                             p.id as ProductId, p.name as ProductName, p.price, p.quantity
+                             FROM Category cf
+                             LEFT JOIN Product p ON cf.id = p.categoryFurniture_id
+                             ORDER BY cf.id, p.id";
+
+                    SqlCommand command = new SqlCommand(query, connection);
+                    SqlDataReader reader = command.ExecuteReader();
+
+                    int currentCategoryId = -1;
+                    TreeViewItem currentCategoryItem = null;
+
+                    while (reader.Read())
+                    {
+                        int categoryId = reader.GetInt32(reader.GetOrdinal("CategoryId"));
+                        string categoryName = reader.GetString(reader.GetOrdinal("CategoryName"));
+
+                        if (categoryId != currentCategoryId)
+                        {
+                            currentCategoryItem = new TreeViewItem
+                            {
+                                Header = categoryName,
+                                FontSize = 20,
+                                IsExpanded = false
+                            };
+                            AdminCategoriesTreeView.Items.Add(currentCategoryItem);
+                            currentCategoryId = categoryId;
+                        }
+
+                        if (!reader.IsDBNull(reader.GetOrdinal("ProductId")))
+                        {
+                            string name = reader.GetString(reader.GetOrdinal("ProductName"));
+                            decimal price = reader.GetDecimal(reader.GetOrdinal("price"));
+                            int quantity = reader.GetInt32(reader.GetOrdinal("quantity"));
+
+                            TreeViewItem productItem = new TreeViewItem
+                            {
+                                Header = $"Товар: {name}; Цена: {price:C}; Кол-во: {quantity}",
+                                FontSize = 16
+                            };
+
+                            currentCategoryItem?.Items.Add(productItem);
+                        }
+                    }
+
+                    reader.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при загрузке данных: " + ex.Message);
+            }
+        }
+
+        private void AddCategoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            AdministratorPanel.Visibility = Visibility.Collapsed;
+            AddCategoryPanel.Visibility = Visibility.Visible;
+            CategoryNameTextBox.Text = string.Empty;
+        }
+
+        private void SaveCategoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            string categoryName = CategoryNameTextBox.Text.Trim();
+
+            if (string.IsNullOrEmpty(categoryName))
+            {
+                MessageBox.Show("Название категории не может быть пустым.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                using (SqlConnection connection = GetDatabaseConnection())
+                {
+                    connection.Open();
+                    string query = "INSERT INTO Category (name) VALUES (@CategoryName)"; // id не указываем, пусть база сама присвоит
+                    SqlCommand command = new SqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@CategoryName", categoryName);
+                    command.ExecuteNonQuery();
+
+                    MessageBox.Show("Категория успешно добавлена.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                LoadAdminCategoriesAndProducts();
+                AddCategoryPanel.Visibility = Visibility.Collapsed;
+                AdministratorPanel.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при добавлении категории: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void CancelAddCategoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            AddCategoryPanel.Visibility = Visibility.Collapsed;
+            AdministratorPanel.Visibility = Visibility.Visible;
+        }
+
+        private void DeleteCategoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (AdminCategoriesTreeView.SelectedItem is TreeViewItem selectedItem &&
+                selectedItem.Parent is TreeView treeView)
+            {
+                string categoryName = selectedItem.Header.ToString();
+
+                MessageBoxResult result = MessageBox.Show(
+                    $"Вы уверены, что хотите удалить категорию '{categoryName}'? Все связанные товары также будут удалены.",
+                    "Подтверждение удаления",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    try
+                    {
+                        using (SqlConnection connection = GetDatabaseConnection())
+                        {
+                            connection.Open();
+                            string query = "SELECT id FROM Category WHERE name = @CategoryName";
+                            SqlCommand command = new SqlCommand(query, connection);
+                            command.Parameters.AddWithValue("@CategoryName", categoryName);
+                            object categoryIdObj = command.ExecuteScalar();
+                            if (categoryIdObj == null)
+                            {
+                                MessageBox.Show("Категория не найдена в базе данных.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                                return;
+                            }
+                            int categoryId = Convert.ToInt32(categoryIdObj);
+                            string deleteProductsQuery = "DELETE FROM Product WHERE categoryFurniture_id = @CategoryId";
+                            SqlCommand deleteProductsCommand = new SqlCommand(deleteProductsQuery, connection);
+                            deleteProductsCommand.Parameters.AddWithValue("@CategoryId", categoryId);
+                            deleteProductsCommand.ExecuteNonQuery();
+                            string deleteCategoryQuery = "DELETE FROM Category WHERE id = @CategoryId";
+                            SqlCommand deleteCategoryCommand = new SqlCommand(deleteCategoryQuery, connection);
+                            deleteCategoryCommand.Parameters.AddWithValue("@CategoryId", categoryId);
+                            deleteCategoryCommand.ExecuteNonQuery();
+                            MessageBox.Show($"Категория '{categoryName}' успешно удалена.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                            LoadAdminCategoriesAndProducts();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Ошибка при удалении категории: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите категорию для удаления.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void AdminCategoriesTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (AdminCategoriesTreeView.SelectedItem is TreeViewItem selectedItem && selectedItem.Parent == AdminCategoriesTreeView)
+            {
+                AddProductButton.IsEnabled = true;
+            }
+            else
+            {
+                AddProductButton.IsEnabled = false;
+            }
+        }
+
+
+
+        private void AddProductButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (AdminCategoriesTreeView.SelectedItem is TreeViewItem selectedItem)
+            {
+
+                ProductCategoryTextBox.Text = selectedItem.Header.ToString();
+                AddProductPanel.Visibility = Visibility.Visible;
+                AdministratorPanel.Visibility = Visibility.Collapsed;
+                ProductQuantityTextBox.Text = "Количество:";
+                ProductQuantityTextBox.Foreground = Brushes.Gray;
+                ProductPriceTextBox.Text = "Стоимость:";
+                ProductPriceTextBox.Foreground = Brushes.Gray;
+                ProductNameTextBox.Text = "Название товара:";
+                ProductNameTextBox.Foreground = Brushes.Gray;
+            }
+        }
+
+        private void SaveProductButton_Click(object sender, RoutedEventArgs e)
+        {
+            string productName = ProductNameTextBox.Text.Trim();
+            string categoryName = ProductCategoryTextBox.Text;
+
+            if (!decimal.TryParse(ProductPriceTextBox.Text, out decimal price) || price <= 0)
+            {
+                MessageBox.Show("Введите корректную стоимость.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (!int.TryParse(ProductQuantityTextBox.Text, out int quantity) || quantity < 0)
+            {
+                MessageBox.Show("Введите корректное количество.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                using (SqlConnection connection = GetDatabaseConnection())
+                {
+                    connection.Open();
+
+                    string insertQuery = @"
+                INSERT INTO Product (name, categoryFurniture_id, price, quantity)
+                SELECT @ProductName, id, @Price, @Quantity
+                FROM Category
+                WHERE name = @CategoryName";
+
+                    SqlCommand insertCommand = new SqlCommand(insertQuery, connection);
+                    insertCommand.Parameters.AddWithValue("@ProductName", productName);
+                    insertCommand.Parameters.AddWithValue("@CategoryName", categoryName);
+                    insertCommand.Parameters.AddWithValue("@Price", price);
+                    insertCommand.Parameters.AddWithValue("@Quantity", quantity);
+
+                    int rowsAffected = insertCommand.ExecuteNonQuery();
+
+                    if (rowsAffected > 0)
+                    {
+                        MessageBox.Show("Товар успешно добавлен.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Ошибка: Категория не найдена.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+
+                AddProductPanel.Visibility = Visibility.Collapsed;
+                AdministratorPanel.Visibility = Visibility.Visible;
+                LoadAdminCategoriesAndProducts();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при добавлении товара: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void CancelAddProductButton_Click(object sender, RoutedEventArgs e)
+        {
+            AddProductPanel.Visibility = Visibility.Collapsed;
+            AdministratorPanel.Visibility = Visibility.Visible;
+        }
+
+        private void DeleteProductButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (AdminCategoriesTreeView.SelectedItem is TreeViewItem selectedItem && selectedItem.Parent != AdminCategoriesTreeView)
+            {
+                string productInfo = selectedItem.Header.ToString();
+                string[] productParts = productInfo.Split(new string[] { "; Цена: ", "; Кол-во: " }, StringSplitOptions.None);
+                string productName = productParts[0].Replace("Товар: ", "");
+                MessageBoxResult result = MessageBox.Show(
+                    $"Вы уверены, что хотите удалить товар '{productName}'?", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    try
+                    {
+                        string productIdQuery = "SELECT id FROM Product WHERE name = @ProductName";
+                        using (SqlConnection connection = GetDatabaseConnection())
+                        {
+                            connection.Open();
+                            SqlCommand command = new SqlCommand(productIdQuery, connection);
+                            command.Parameters.AddWithValue("@ProductName", productName);
+                            object productIdObj = command.ExecuteScalar();
+
+                            if (productIdObj != null)
+                            {
+                                int productId = Convert.ToInt32(productIdObj);
+                                string deleteProductQuery = "DELETE FROM Product WHERE id = @ProductId";
+                                SqlCommand deleteCommand = new SqlCommand(deleteProductQuery, connection);
+                                deleteCommand.Parameters.AddWithValue("@ProductId", productId);
+                                deleteCommand.ExecuteNonQuery();
+                                MessageBox.Show($"Товар '{productName}' успешно удален.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                                LoadAdminCategoriesAndProducts();
+                            }
+                            else
+                            {
+                                MessageBox.Show("Товар не найден в базе данных.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Ошибка при удалении товара: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите товар для удаления.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+
+
     }
 }
