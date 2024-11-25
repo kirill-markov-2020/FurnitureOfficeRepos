@@ -544,30 +544,21 @@ namespace FurnitureProject
             if (AdminCategoriesTreeView.SelectedItem is TreeViewItem selectedItem && selectedItem.Parent != AdminCategoriesTreeView)
             {
                 string productInfo = selectedItem.Header.ToString();
-                string[] productParts = productInfo.Split(new string[] { "; Цена: ", "; Кол-во: " }, StringSplitOptions.None);
+                string[] productParts = productInfo.Split(new string[] { "; Цена: ", "; Товаров на складе: " }, StringSplitOptions.None);
                 string productName = productParts[0].Replace("Товар: ", "");
-                MessageBoxResult result = MessageBox.Show(
+                var result = MessageBox.Show(
                     $"Вы уверены, что хотите удалить товар '{productName}'?", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    try
+                using (var dbContext = new AppDbContext())
+                    if (result == MessageBoxResult.Yes)
                     {
-                        string productIdQuery = "SELECT id FROM Product WHERE name = @ProductName";
-                        using (SqlConnection connection = GetDatabaseConnection())
+                        try
                         {
-                            connection.Open();
-                            SqlCommand command = new SqlCommand(productIdQuery, connection);
-                            command.Parameters.AddWithValue("@ProductName", productName);
-                            object productIdObj = command.ExecuteScalar();
+                            var product = dbContext.Products.FirstOrDefault(p => p.Name == productName);
 
-                            if (productIdObj != null)
+                            if (product != null)
                             {
-                                int productId = Convert.ToInt32(productIdObj);
-                                string deleteProductQuery = "DELETE FROM Product WHERE id = @ProductId";
-                                SqlCommand deleteCommand = new SqlCommand(deleteProductQuery, connection);
-                                deleteCommand.Parameters.AddWithValue("@ProductId", productId);
-                                deleteCommand.ExecuteNonQuery();
+                                dbContext.Products.Remove(product);
+                                dbContext.SaveChanges();
                                 MessageBox.Show($"Товар '{productName}' успешно удален.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
                                 LoadAdminCategoriesAndProducts();
                             }
@@ -576,20 +567,16 @@ namespace FurnitureProject
                                 MessageBox.Show("Товар не найден в базе данных.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                             }
                         }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Ошибка при удалении товара: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Ошибка при удалении товара: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
             }
             else
             {
                 MessageBox.Show("Пожалуйста, выберите товар для удаления.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
-
-
-
     }
 }
