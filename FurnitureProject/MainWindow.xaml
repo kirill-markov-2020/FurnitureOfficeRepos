@@ -55,6 +55,19 @@
                 <GradientStop Color="#FF5F00FF" Offset="1"/>
             </LinearGradientBrush>
         </Grid.Background>
+        <Grid x:Name="LoadingPanel" Visibility="Collapsed">
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="LightBlue" Offset="0"/>
+                    <GradientStop Color="#FF5F00FF" Offset="1"/>
+                </LinearGradientBrush>
+            </Grid.Background>
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top">
+                <TextBlock Text="Загрузка данных!" FontSize="30" Margin="10,150,10,10" HorizontalAlignment="Center"/>
+                <ProgressBar IsIndeterminate="True" Width="400" Height="35" Margin="10" Background="LightBlue" Foreground="#FF5F00FF" BorderBrush="#FF5F00FF" BorderThickness="3"/>
+                <TextBlock Text="Пожалуйста, подождите..." FontSize="30" Margin="10" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
         <StackPanel x:Name="AuthorizationPanel" Visibility="Visible">
             <TextBlock Text="Авторизация" FontSize="52" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="55,75,55,65"/>
             <TextBox x:Name="TextBoxInputLogin"  Text="Введите логин" HorizontalAlignment="Center" Style="{StaticResource TextBoxBorderRound}" Foreground="Gray"  Width="400" Height="50" VerticalAlignment="Center" Margin="15" GotFocus="TextBoxInputLogin_GotFocus" LostFocus="TextBoxInputLogin_LostFocus" />

@@ -1,21 +1,14 @@
 ﻿using FurnitureProject.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Windows.Threading;
+
 
 namespace FurnitureProject
 {
@@ -27,6 +20,7 @@ namespace FurnitureProject
         public MainWindow()
         {
             InitializeComponent();
+            InitializeLoadingTimer();
         }
 
         private void TextBoxInputLogin_GotFocus(object sender, RoutedEventArgs e)
@@ -105,25 +99,55 @@ namespace FurnitureProject
                 PasswordHintText.Visibility = Visibility.Visible;
             }
         }
+
+        private DispatcherTimer loadingTimer;
+        private void InitializeLoadingTimer()
+        {
+            loadingTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(3.7)
+            };
+            loadingTimer.Tick += (s, e) =>
+            {
+                loadingTimer.Stop();
+                LoadingPanel.Visibility = Visibility.Collapsed;
+                switch (CurrentRole)
+                {
+                    case "Manager":
+                        ManagerPanel.Visibility = Visibility.Visible;
+                        LoadManagerCategoriesAndProducts();
+                        break;
+                    case "Administrator":
+                        AdministratorPanel.Visibility = Visibility.Visible;
+                        LoadAdminCategoriesAndProducts();
+                        break;
+                    case "Consultant":
+                        ConsultantPanel.Visibility = Visibility.Visible;
+                        LoadCategories();
+                        break;
+                }
+            };
+        }
+        private string CurrentRole;
         private void AuthorizationButton_Click(object sender, RoutedEventArgs e)
         {
-            if (TextBoxInputLogin.Text == "2" && PasswordBox.Password == "2")
+            if (TextBoxInputLogin.Text == "ManagerLogin" && PasswordBox.Password == "ManagerPassword")
             {
+                CurrentRole = "Manager";
                 AuthorizationPanel.Visibility = Visibility.Collapsed;
-                ManagerPanel.Visibility = Visibility.Visible;
-                LoadManagerCategoriesAndProducts();
+                ShowLoadingPanel();
             }
-            else if (TextBoxInputLogin.Text == "3" && PasswordBox.Password == "3")
+            else if (TextBoxInputLogin.Text == "AdministratorLogin" && PasswordBox.Password == "AdministratorPassword")
             {
+                CurrentRole = "Administrator";
                 AuthorizationPanel.Visibility = Visibility.Collapsed;
-                AdministratorPanel.Visibility = Visibility.Visible;
-                LoadAdminCategoriesAndProducts();
+                ShowLoadingPanel();
             }
-            else if (TextBoxInputLogin.Text == "1" && PasswordBox.Password == "1")
+            else if (TextBoxInputLogin.Text == "ConsultantLogin" && PasswordBox.Password == "ConsultantPassword")
             {
+                CurrentRole = "Consultant";
                 AuthorizationPanel.Visibility = Visibility.Collapsed;
-                ConsultantPanel.Visibility = Visibility.Visible;
-                LoadCategories();
+                ShowLoadingPanel();
             }
             else if (TextBoxInputLogin.Text == "Введите логин" && PasswordBox.Password == "")
             {
@@ -133,6 +157,11 @@ namespace FurnitureProject
             {
                 MessageBox.Show("Неверный логин или пароль", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
+        }
+        private void ShowLoadingPanel()
+        {
+            LoadingPanel.Visibility = Visibility.Visible;
+            loadingTimer.Start();
         }
         private void ShowPasswordButton_Click(object sender, RoutedEventArgs e)
         {
