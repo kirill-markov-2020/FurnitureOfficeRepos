@@ -284,23 +284,25 @@ namespace FurnitureProject
 
         private void UpdateProductQuantity(int change)
         {
-            if (selectedProductId.HasValue)
+            if (!selectedProductId.HasValue)
+            {
+                MessageBox.Show("Пожалуйста, выберите товар для изменения количества", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            using (var dbContext = new AppDbContext())
             {
                 try
                 {
-                    using (SqlConnection connection = GetDatabaseConnection())
+                    var product = dbContext.Products.FirstOrDefault(p => p.Id == selectedProductId.Value);
+                    if (product != null)
                     {
-                        connection.Open();
-                        string query = "UPDATE Product SET quantity = quantity + @Change WHERE id = @ProductId";
-                        SqlCommand command = new SqlCommand(query, connection);
-                        command.Parameters.AddWithValue("@Change", change);
-                        command.Parameters.AddWithValue("@ProductId", selectedProductId.Value);
-                        command.ExecuteNonQuery();                       
-                        query = "SELECT quantity FROM Product WHERE id = @ProductId";
-                        command = new SqlCommand(query, connection);
-                        command.Parameters.AddWithValue("@ProductId", selectedProductId.Value);
-                        int newQuantity = (int)command.ExecuteScalar();
-                        UpdateTreeViewItemText(newQuantity);
+                        product.Quantity += change; 
+                        dbContext.SaveChanges();    
+                        UpdateTreeViewItemText(product.Quantity);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Товар не найден", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                 }
                 catch (Exception ex)
@@ -308,16 +310,11 @@ namespace FurnitureProject
                     MessageBox.Show("Ошибка при изменении количества: " + ex.Message);
                 }
             }
-            else
-            {
-                MessageBox.Show("Пожалуйста, выберите товар для изменения количества", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
         }
         private void UpdateTreeViewItemText(int newQuantity)
         {
             if (ManagerCategoriesTreeView.SelectedItem is TreeViewItem selectedItem)
             {
-
                 string headerText = selectedItem.Header.ToString();
                 int index = headerText.LastIndexOf("Товаров на складе: ");
                 if (index != -1)
@@ -326,7 +323,6 @@ namespace FurnitureProject
                     selectedItem.Header = headerText;
                 }
 
-                
                 SelectedProductQuantityText.Text = $"Количество: {newQuantity}";
             }
         }
