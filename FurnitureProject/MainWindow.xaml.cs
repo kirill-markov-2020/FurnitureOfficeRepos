@@ -413,56 +413,46 @@ namespace FurnitureProject
 
         private void DeleteCategoryButton_Click(object sender, RoutedEventArgs e)
         {
-            if (AdminCategoriesTreeView.SelectedItem is TreeViewItem selectedItem &&
-                selectedItem.Parent is TreeView treeView)
-            {
-                string categoryName = selectedItem.Header.ToString();
-
-                MessageBoxResult result = MessageBox.Show(
-                    $"Вы уверены, что хотите удалить категорию '{categoryName}'? Все связанные товары также будут удалены.",
-                    "Подтверждение удаления",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
-
-                if (result == MessageBoxResult.Yes)
+            using (var dbContext = new AppDbContext())
+                if (AdminCategoriesTreeView.SelectedItem is TreeViewItem selectedItem)
                 {
-                    try
+                    string categoryName = selectedItem.Header.ToString();
+
+                    var category = dbContext.Categories
+                        .FirstOrDefault(c => c.Name == categoryName);
+
+                    if (category != null)
                     {
-                        using (SqlConnection connection = GetDatabaseConnection())
+                        var result = MessageBox.Show(
+                            $"Вы уверены, что хотите удалить категорию '{categoryName}'? Все связанные товары также будут удалены.", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                        if (result == MessageBoxResult.Yes)
                         {
-                            connection.Open();
-                            string query = "SELECT id FROM Category WHERE name = @CategoryName";
-                            SqlCommand command = new SqlCommand(query, connection);
-                            command.Parameters.AddWithValue("@CategoryName", categoryName);
-                            object categoryIdObj = command.ExecuteScalar();
-                            if (categoryIdObj == null)
+
+                            try
                             {
-                                MessageBox.Show("Категория не найдена в базе данных.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                                return;
+                                var products = dbContext.Products.Where(p => p.CategoryFurniture_Id == category.Id).ToList();
+                                dbContext.Products.RemoveRange(products);
+                                dbContext.Categories.Remove(category);
+                                dbContext.SaveChanges();
+
+                                MessageBox.Show($"Категория '{categoryName}' успешно удалена.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                                LoadAdminCategoriesAndProducts();
                             }
-                            int categoryId = Convert.ToInt32(categoryIdObj);
-                            string deleteProductsQuery = "DELETE FROM Product WHERE categoryFurniture_id = @CategoryId";
-                            SqlCommand deleteProductsCommand = new SqlCommand(deleteProductsQuery, connection);
-                            deleteProductsCommand.Parameters.AddWithValue("@CategoryId", categoryId);
-                            deleteProductsCommand.ExecuteNonQuery();
-                            string deleteCategoryQuery = "DELETE FROM Category WHERE id = @CategoryId";
-                            SqlCommand deleteCategoryCommand = new SqlCommand(deleteCategoryQuery, connection);
-                            deleteCategoryCommand.Parameters.AddWithValue("@CategoryId", categoryId);
-                            deleteCategoryCommand.ExecuteNonQuery();
-                            MessageBox.Show($"Категория '{categoryName}' успешно удалена.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-                            LoadAdminCategoriesAndProducts();
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("Ошибка при удалении категории: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                            }
                         }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        MessageBox.Show("Ошибка при удалении категории: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show("Категория не найдена.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
-            }
-            else
-            {
-                MessageBox.Show("Пожалуйста, выберите категорию для удаления.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
+                else
+                {
+                    MessageBox.Show("Пожалуйста, выберите категорию для удаления.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
         }
 
         private void AdminCategoriesTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
