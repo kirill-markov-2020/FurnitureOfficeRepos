@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -105,30 +106,21 @@ namespace FurnitureProject
         }
         private void AuthorizationButton_Click(object sender, RoutedEventArgs e)
         {
-            if (TextBoxInputLogin.Text == "ManagerLogin" && PasswordBox.Password == "ManagerPassword")
+            if (TextBoxInputLogin.Text == "2" && PasswordBox.Password == "2")
             {
                 AuthorizationPanel.Visibility = Visibility.Collapsed;
-
                 ManagerPanel.Visibility = Visibility.Visible;
-                AdministratorPanel.Visibility = Visibility.Collapsed;
-                ConsultantPanel.Visibility = Visibility.Collapsed;
                 LoadManagerCategoriesAndProducts();
             }
-            else if (TextBoxInputLogin.Text == "AdministratorLogin" && PasswordBox.Password == "AdministratorPassword")
+            else if (TextBoxInputLogin.Text == "3" && PasswordBox.Password == "3")
             {
                 AuthorizationPanel.Visibility = Visibility.Collapsed;
-
-                ManagerPanel.Visibility = Visibility.Collapsed;
                 AdministratorPanel.Visibility = Visibility.Visible;
-                ConsultantPanel.Visibility = Visibility.Collapsed;
                 LoadAdminCategoriesAndProducts();
             }
-            else if (TextBoxInputLogin.Text == "ConsultantLogin" && PasswordBox.Password == "ConsultantPassword")
+            else if (TextBoxInputLogin.Text == "1" && PasswordBox.Password == "1")
             {
                 AuthorizationPanel.Visibility = Visibility.Collapsed;
-
-                ManagerPanel.Visibility = Visibility.Collapsed;
-                AdministratorPanel.Visibility = Visibility.Collapsed;
                 ConsultantPanel.Visibility = Visibility.Visible;
                 LoadCategories();
             }
@@ -253,67 +245,42 @@ namespace FurnitureProject
         private void LoadManagerCategoriesAndProducts()
         {
             ManagerCategoriesTreeView.Items.Clear();
-
-            try
+            using (var dbContext = new AppDbContext())
             {
-                using (SqlConnection connection = GetDatabaseConnection())
+                try
                 {
-                    connection.Open();
+                    var categories = dbContext.Categories
+                        .Include(c => c.Products)
+                        .OrderBy(c => c.Id)
+                        .ToList();
 
-                    string query = @"SELECT cf.id as CategoryId, cf.name as CategoryName, 
-                                p.id as ProductId, p.name as ProductName, p.price, p.quantity
-                             FROM Category cf
-                             LEFT JOIN Product p ON cf.id = p.categoryFurniture_id
-                             ORDER BY cf.id, p.id";
-
-                    SqlCommand command = new SqlCommand(query, connection);
-                    SqlDataReader reader = command.ExecuteReader();
-
-                    int currentCategoryId = -1;
-                    TreeViewItem currentCategoryItem = null;
-
-                    while (reader.Read())
+                    foreach (var category in categories)
                     {
-                        int categoryId = reader.GetInt32(reader.GetOrdinal("CategoryId"));
-                        string categoryName = reader.GetString(reader.GetOrdinal("CategoryName"));
-
-                        if (categoryId != currentCategoryId)
+                        var currentCategoryItem = new TreeViewItem
                         {
-                            currentCategoryItem = new TreeViewItem
-                            {
-                                Header = categoryName,
-                                FontSize = 20,
-                                IsExpanded = false
-                            };
-                            ManagerCategoriesTreeView.Items.Add(currentCategoryItem);
-                            currentCategoryId = categoryId;
-                        }
-                        if (!reader.IsDBNull(reader.GetOrdinal("ProductId")))
-                        {
-                            int productId = reader.GetInt32(reader.GetOrdinal("ProductId"));
-                            string productName = reader.GetString(reader.GetOrdinal("ProductName"));
-                            decimal price = reader.GetDecimal(reader.GetOrdinal("price"));
-                            int quantity = reader.GetInt32(reader.GetOrdinal("quantity"));
+                            Header = category.Name,
+                            FontSize = 20,
+                            IsExpanded = false
+                        };
+                        ManagerCategoriesTreeView.Items.Add(currentCategoryItem);
 
-                            TreeViewItem productItem = new TreeViewItem
+                        foreach (var product in category.Products)
+                        {
+                            var productItem = new TreeViewItem
                             {
-                                Header = $"Товар: {productName}; Цена: {price:C}; Товаров на складе: {quantity}",
+                                Header = $"Товар: {product.Name}; Цена: {product.Price:C}; Товаров на складе: {product.Quantity}",
                                 FontSize = 16,
-                                IsExpanded = false,
-                                Tag = productId 
+                                Tag = product 
                             };
-                            currentCategoryItem?.Items.Add(productItem);
+                            currentCategoryItem.Items.Add(productItem);
                         }
                     }
-
-                    reader.Close();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при загрузке данных: " + ex.Message);
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Ошибка при загрузке данных: " + ex.Message);
-            }
-
         }
         private int? selectedProductId = null; 
 
