@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FurnitureProject.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -254,24 +255,15 @@ namespace FurnitureProject
                 }
             }
         }
-        private int? selectedProductId = null; 
+        private int? selectedProductId = null;
 
         private void ManagerCategoriesTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            if (ManagerCategoriesTreeView.SelectedItem is TreeViewItem selectedItem && selectedItem.Tag is int productId)
+            if (ManagerCategoriesTreeView.SelectedItem is TreeViewItem selectedItem && selectedItem.Tag is Product product)
             {
-                selectedProductId = productId; 
-                QuantityControlPanel.Visibility = Visibility.Visible; 
-                using (SqlConnection connection = GetDatabaseConnection())
-                {
-                    connection.Open();
-                    string query = "SELECT quantity FROM Product WHERE id = @ProductId";
-                    SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@ProductId", productId);
-
-                    int quantity = (int)command.ExecuteScalar();
-                    SelectedProductQuantityText.Text = $"Количество: {quantity}";
-                }
+                selectedProductId = product.Id;
+                QuantityControlPanel.Visibility = Visibility.Visible;
+                SelectedProductQuantityText.Text = $"Количество: {product.Quantity}";
             }
             else
             {
