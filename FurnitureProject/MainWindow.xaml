@@ -118,9 +118,33 @@
             </StackPanel>
 
         </StackPanel>
+
+        <StackPanel x:Name="AdminSelectionPanel" Visibility="Collapsed" Margin="10">
+            <Button x:Name="BackAuthorizationButtonAdmin" Width="24" Height="24" HorizontalAlignment="Left" BorderThickness="0" Background="Transparent" Margin="25,35,15,15" VerticalAlignment="Center" Click="BackToAuthorization_Click">
+                <Button.Content>
+                    <Image Source="/BackAccount.png" />
+                </Button.Content>
+            </Button>
+            <TextBlock Text="Выберите раздел" FontSize="18" Margin="0,0,0,10" />
+            <Button Content="Пользователи" Style="{StaticResource ButtonBorderRound}" Click="ShowUsersPanel_Click" Width="150" Height="30" Margin="0,10" />
+            <Button Content="БД" Style="{StaticResource ButtonBorderRound}" Click="ShowDatabasePanel_Click" Width="150" Height="30" Margin="0,10" />
+        </StackPanel>
+
+        <StackPanel x:Name="UsersPanel" Visibility="Collapsed" Margin="10">
+            <Button  Width="24" Height="24" HorizontalAlignment="Left" BorderThickness="0" Background="Transparent" Margin="25,35,15,15" VerticalAlignment="Center" Click="BackToAdminSelectionPanel_Click">
+                <Button.Content>
+                    <Image Source="/BackAccount.png" />
+                </Button.Content>
+            </Button>
+            <TextBlock Text="Список пользователей" HorizontalAlignment="Center" FontSize="18" Margin="0,0,0,10" />
+            
+
+
+        </StackPanel>
+
         <StackPanel x:Name="AdministratorPanel" Visibility="Collapsed">
             <Grid>
-                <Button x:Name="BackAuthorizationButtonAdmin" Width="24" Height="24" HorizontalAlignment="Left" BorderThickness="0" Background="Transparent" Margin="25,35,15,15" VerticalAlignment="Center" Click="BackToAuthorization_Click">
+                <Button  Width="24" Height="24" HorizontalAlignment="Left" BorderThickness="0" Background="Transparent" Margin="25,35,15,15" VerticalAlignment="Center" Click="BackToAdminSelectionPanel_Click">
                     <Button.Content>
                         <Image Source="/BackAccount.png" />
                     </Button.Content>

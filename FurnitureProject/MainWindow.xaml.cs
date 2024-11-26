@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -118,7 +119,7 @@ namespace FurnitureProject
                         LoadManagerCategoriesAndProducts();
                         break;
                     case "Administrator":
-                        AdministratorPanel.Visibility = Visibility.Visible;
+                        AdminSelectionPanel.Visibility = Visibility.Visible;
                         LoadAdminCategoriesAndProducts();
                         break;
                     case "Consultant":
@@ -131,33 +132,57 @@ namespace FurnitureProject
         private string CurrentRole;
         private void AuthorizationButton_Click(object sender, RoutedEventArgs e)
         {
-            if (TextBoxInputLogin.Text == "ManagerLogin" && PasswordBox.Password == "ManagerPassword")
-            {
-                CurrentRole = "Manager";
-                AuthorizationPanel.Visibility = Visibility.Collapsed;
-                ShowLoadingPanel();
-            }
-            else if (TextBoxInputLogin.Text == "AdministratorLogin" && PasswordBox.Password == "AdministratorPassword")
-            {
-                CurrentRole = "Administrator";
-                AuthorizationPanel.Visibility = Visibility.Collapsed;
-                ShowLoadingPanel();
-            }
-            else if (TextBoxInputLogin.Text == "ConsultantLogin" && PasswordBox.Password == "ConsultantPassword")
-            {
-                CurrentRole = "Consultant";
-                AuthorizationPanel.Visibility = Visibility.Collapsed;
-                ShowLoadingPanel();
-            }
-            else if (TextBoxInputLogin.Text == "Введите логин" && PasswordBox.Password == "")
+            if (TextBoxInputLogin.Text == "Введите логин" || string.IsNullOrWhiteSpace(PasswordBox.Password))
             {
                 MessageBox.Show("Введите логин или пароль", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
-            else
+
+            using (var dbContext = new AppDbContext())
             {
-                MessageBox.Show("Неверный логин или пароль", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                try
+                {
+                    var user = dbContext.Users
+                        .FirstOrDefault(u => u.Login == TextBoxInputLogin.Text && u.Password == PasswordBox.Password);
+
+                    if (user != null)
+                    {
+                        CurrentRole = user.Role;
+                        AuthorizationPanel.Visibility = Visibility.Collapsed;                      
+                        switch (CurrentRole)
+                        {
+                            case "Manager":
+                                ShowLoadingPanel();
+                                LoadManagerCategoriesAndProducts();
+                                break;
+                            case "Administrator":
+                                ShowLoadingPanel(); 
+                                break;
+                            case "Consultant":
+                                ShowLoadingPanel();
+                                LoadCategories();
+                                break;
+                            default:
+                                MessageBox.Show("Неизвестная роль пользователя.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                AuthorizationPanel.Visibility = Visibility.Visible;
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Неверный логин или пароль", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при авторизации: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Debug.WriteLine(ex.Message);
+                }
             }
         }
+
+
+
         private void ShowLoadingPanel()
         {
             LoadingPanel.Visibility = Visibility.Visible;
@@ -194,7 +219,7 @@ namespace FurnitureProject
                 PasswordBox.Password = string.Empty;
                 PasswordHintText.Visibility = Visibility.Visible;
                 ManagerPanel.Visibility = Visibility.Collapsed;
-                AdministratorPanel.Visibility = Visibility.Collapsed;
+                AdminSelectionPanel.Visibility = Visibility.Collapsed;
                 ConsultantPanel.Visibility = Visibility.Collapsed;
                 AuthorizationPanel.Visibility = Visibility.Visible;
             }
@@ -601,5 +626,39 @@ namespace FurnitureProject
                 MessageBox.Show("Пожалуйста, выберите товар для удаления.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+
+
+
+
+
+
+
+
+
+        // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+
+        private void ShowUsersPanel_Click(object sender, RoutedEventArgs e)
+        {
+            AdminSelectionPanel.Visibility = Visibility.Collapsed;
+            UsersPanel.Visibility = Visibility.Visible;
+
+            
+        }
+
+        private void ShowDatabasePanel_Click(object sender, RoutedEventArgs e)
+        {
+            AdminSelectionPanel.Visibility = Visibility.Collapsed;
+            AdministratorPanel.Visibility = Visibility.Visible;
+        }
+
+        private void BackToAdminSelectionPanel_Click(object sender, RoutedEventArgs e)
+        {
+            UsersPanel.Visibility = Visibility.Collapsed;
+            AdministratorPanel.Visibility = Visibility.Collapsed;
+            AdminSelectionPanel.Visibility = Visibility.Visible;
+        }
+
+
     }
 }
