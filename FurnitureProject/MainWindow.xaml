@@ -141,8 +141,12 @@
                 <ListView x:Name="UsersListView" Height="300" Margin="0,10,0,10" Padding="10" BorderThickness="0">
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="Логин" DisplayMemberBinding="{Binding Login}" Width="150" />
-                            <GridViewColumn Header="Роль" DisplayMemberBinding="{Binding Role}" Width="150" />
+                            <GridViewColumn Header="Имя" DisplayMemberBinding="{Binding Name}" />
+                            <GridViewColumn Header="Фамилия" DisplayMemberBinding="{Binding Surname}" />
+                            <GridViewColumn Header="Отчество" DisplayMemberBinding="{Binding Patronymic}" />
+                            <GridViewColumn Header="Логин" DisplayMemberBinding="{Binding Login}" />
+                            <GridViewColumn Header="Пароль" DisplayMemberBinding="{Binding Password}" />
+                            <GridViewColumn Header="Роль" DisplayMemberBinding="{Binding Role}" />
                         </GridView>
                     </ListView.View>
                 </ListView>
@@ -199,9 +203,12 @@
 
         <StackPanel x:Name="AddUserPanel" Visibility="Collapsed" Margin="10">
             <TextBlock Text="Добавить пользователя" FontSize="18" Margin="0,0,0,10" />
-            <TextBox x:Name="UserLoginTextBox"  Margin="0,0,0,10" />
-            <PasswordBox x:Name="UserPasswordBox" Margin="0,0,0,10" />
-            <PasswordBox x:Name="UserPasswordConfirmBox"  Margin="0,0,0,10" />
+            <TextBox x:Name="UserNameTextBox" Style="{StaticResource TextBoxBorderRound}"/>
+            <TextBox x:Name="UserSurnameTextBox" Style="{StaticResource TextBoxBorderRound}"/>
+            <TextBox x:Name="UserPatronymicTextBox"  Style="{StaticResource TextBoxBorderRound}"/>
+            <TextBox x:Name="UserLoginTextBox"  Margin="0,0,0,10" Style="{StaticResource TextBoxBorderRound}"/>
+            <PasswordBox x:Name="UserPasswordBox" Margin="0,0,0,10" Style="{StaticResource PasswordBoxBorderRound}"/>
+            <PasswordBox x:Name="UserPasswordConfirmBox"  Margin="0,0,0,10" Style="{StaticResource PasswordBoxBorderRound}"/>
             <ComboBox x:Name="RoleComboBox" Margin="0,0,0,10">
                 <ComboBoxItem Content="Consultant" />
                 <ComboBoxItem Content="Manager" />
