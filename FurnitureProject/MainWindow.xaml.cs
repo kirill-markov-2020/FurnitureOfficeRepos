@@ -642,8 +642,8 @@ namespace FurnitureProject
         {
             AdminSelectionPanel.Visibility = Visibility.Collapsed;
             UsersPanel.Visibility = Visibility.Visible;
+            LoadUsers();
 
-            
         }
 
         private void ShowDatabasePanel_Click(object sender, RoutedEventArgs e)
@@ -658,6 +658,19 @@ namespace FurnitureProject
             AdministratorPanel.Visibility = Visibility.Collapsed;
             AdminSelectionPanel.Visibility = Visibility.Visible;
         }
+
+        private void LoadUsers()
+        {
+            using (var dbContext = new AppDbContext())
+            {
+                var users = dbContext.Users
+                    .Select(u => new { u.Login, u.Role })
+                    .ToList();
+
+                UsersListView.ItemsSource = users;
+            }
+        }
+
 
 
     }

@@ -137,7 +137,19 @@
                 </Button.Content>
             </Button>
             <TextBlock Text="Список пользователей" HorizontalAlignment="Center" FontSize="18" Margin="0,0,0,10" />
+            <Border Margin="10 0 10 0" Grid.Row="1" CornerRadius="10" Background="White">
+                <ListView x:Name="UsersListView" Height="300" Margin="0,10,0,10" Padding="10" BorderThickness="0">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Логин" DisplayMemberBinding="{Binding Login}" Width="150" />
+                            <GridViewColumn Header="Роль" DisplayMemberBinding="{Binding Role}" Width="150" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Border>
+
             
+
 
 
         </StackPanel>
