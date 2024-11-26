@@ -735,6 +735,7 @@ namespace FurnitureProject
 
         private void BackToAdminPanel_Click(object sender, RoutedEventArgs e)
         {
+            UpdateUserPanel.Visibility = Visibility.Collapsed;
             AddUserPanel.Visibility = Visibility.Collapsed;
             UsersPanel.Visibility = Visibility.Visible;
             UserNameTextBox.Text = string.Empty;
@@ -744,8 +745,118 @@ namespace FurnitureProject
             UserPasswordBox.Password = string.Empty;
             UserPasswordConfirmBox.Password = string.Empty;
             RoleComboBox.SelectedIndex = -1;
+            UpdateUserNameTextBox.Text = string.Empty;
+            UpdateUserSurnameTextBox.Text = string.Empty;
+            UpdateUserPatronymicTextBox.Text = string.Empty;
+            UpdateUserLoginTextBox.Text = string.Empty;
+            UpdateUserRoleComboBox.SelectedIndex = -1;
+            UpdateUserPasswordTextBox.Text = string.Empty;
             LoadUsers();
         }
+
+        //УДАЛЕНИЕ ПОЛЬЗОВАТЕЛЕЙ
+
+        private void UsersListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {         
+            DeleteUserButton.IsEnabled = UsersListView.SelectedItem != null;
+            UpdateUserButton.IsEnabled = UsersListView.SelectedItem != null;
+        }
+
+        private void DeleteUserButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (UsersListView.SelectedItem == null) return;
+            var selectedUser = (dynamic)UsersListView.SelectedItem;
+            string loginToDelete = selectedUser.Login;
+
+            MessageBoxResult result = MessageBox.Show(
+                $"Вы действительно хотите удалить пользователя '{loginToDelete}'?",
+                "Подтверждение удаления",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question
+            );
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    using (var dbContext = new AppDbContext())
+                    {
+                        var user = dbContext.Users.FirstOrDefault(u => u.Login == loginToDelete);
+                        if (user != null)
+                        {
+                            dbContext.Users.Remove(user);
+                            dbContext.SaveChanges();
+                            MessageBox.Show("Пользователь успешно удален.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                            LoadUsers();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Пользователь не найден.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при удалении пользователя: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        //ОБНОВЛЕНИЕ ПОЛЬЗОВАТЕЛЕЙ
+
+        private void UpdateUserButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (UsersListView.SelectedItem is User selectedUser)
+            {
+                UpdateUserPanel.Visibility = Visibility.Visible;
+                UsersPanel.Visibility = Visibility.Collapsed;
+                UpdateUserNameTextBox.Text = selectedUser.Name;
+                UpdateUserSurnameTextBox.Text = selectedUser.Surname;
+                UpdateUserPatronymicTextBox.Text = selectedUser.Patronymic;
+                UpdateUserLoginTextBox.Text = selectedUser.Login;
+                UpdateUserRoleComboBox.SelectedItem = selectedUser.Role;
+                UpdateUserPasswordTextBox.Text = selectedUser.Password;
+            }
+        }
+
+        private void SaveUpdatedUserButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (UsersListView.SelectedItem is User selectedUser)
+            {
+                try
+                {
+                    using (var dbContext = new AppDbContext())
+                    {
+                        var userToUpdate = dbContext.Users.FirstOrDefault(u => u.Id == selectedUser.Id);
+
+                        if (userToUpdate != null)
+                        {
+                            userToUpdate.Name = UpdateUserNameTextBox.Text.Trim();
+                            userToUpdate.Surname = UpdateUserSurnameTextBox.Text.Trim();
+                            userToUpdate.Patronymic = UpdateUserPatronymicTextBox.Text.Trim();
+                            userToUpdate.Login = UpdateUserLoginTextBox.Text.Trim();
+                            userToUpdate.Role = (UpdateUserRoleComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+                            userToUpdate.Password = UpdateUserPasswordTextBox.Text.Trim();
+                            dbContext.SaveChanges();
+                            MessageBox.Show("Данные пользователя успешно обновлены!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                            LoadUsers();
+                            BackToAdminPanel_Click(sender, e);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при обновлении данных: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+
+
+
+
+
+
 
 
 
