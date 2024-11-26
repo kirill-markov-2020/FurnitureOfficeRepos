@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using FurnitureProject.Models;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Windows.Threading;
+
 
 namespace FurnitureProject
 {
@@ -25,6 +20,7 @@ namespace FurnitureProject
         public MainWindow()
         {
             InitializeComponent();
+            InitializeLoadingTimer();
         }
 
         private void TextBoxInputLogin_GotFocus(object sender, RoutedEventArgs e)
@@ -103,34 +99,55 @@ namespace FurnitureProject
                 PasswordHintText.Visibility = Visibility.Visible;
             }
         }
+
+        private DispatcherTimer loadingTimer;
+        private void InitializeLoadingTimer()
+        {
+            loadingTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(3.8)
+            };
+            loadingTimer.Tick += (s, e) =>
+            {
+                loadingTimer.Stop();
+                LoadingPanel.Visibility = Visibility.Collapsed;
+                switch (CurrentRole)
+                {
+                    case "Manager":
+                        ManagerPanel.Visibility = Visibility.Visible;
+                        LoadManagerCategoriesAndProducts();
+                        break;
+                    case "Administrator":
+                        AdministratorPanel.Visibility = Visibility.Visible;
+                        LoadAdminCategoriesAndProducts();
+                        break;
+                    case "Consultant":
+                        ConsultantPanel.Visibility = Visibility.Visible;
+                        LoadCategories();
+                        break;
+                }
+            };
+        }
+        private string CurrentRole;
         private void AuthorizationButton_Click(object sender, RoutedEventArgs e)
         {
             if (TextBoxInputLogin.Text == "ManagerLogin" && PasswordBox.Password == "ManagerPassword")
             {
+                CurrentRole = "Manager";
                 AuthorizationPanel.Visibility = Visibility.Collapsed;
-
-                ManagerPanel.Visibility = Visibility.Visible;
-                AdministratorPanel.Visibility = Visibility.Collapsed;
-                ConsultantPanel.Visibility = Visibility.Collapsed;
-                LoadManagerCategoriesAndProducts();
+                ShowLoadingPanel();
             }
             else if (TextBoxInputLogin.Text == "AdministratorLogin" && PasswordBox.Password == "AdministratorPassword")
             {
+                CurrentRole = "Administrator";
                 AuthorizationPanel.Visibility = Visibility.Collapsed;
-
-                ManagerPanel.Visibility = Visibility.Collapsed;
-                AdministratorPanel.Visibility = Visibility.Visible;
-                ConsultantPanel.Visibility = Visibility.Collapsed;
-                LoadAdminCategoriesAndProducts();
+                ShowLoadingPanel();
             }
             else if (TextBoxInputLogin.Text == "ConsultantLogin" && PasswordBox.Password == "ConsultantPassword")
             {
+                CurrentRole = "Consultant";
                 AuthorizationPanel.Visibility = Visibility.Collapsed;
-
-                ManagerPanel.Visibility = Visibility.Collapsed;
-                AdministratorPanel.Visibility = Visibility.Collapsed;
-                ConsultantPanel.Visibility = Visibility.Visible;
-                LoadCategories();
+                ShowLoadingPanel();
             }
             else if (TextBoxInputLogin.Text == "Введите логин" && PasswordBox.Password == "")
             {
@@ -140,6 +157,11 @@ namespace FurnitureProject
             {
                 MessageBox.Show("Неверный логин или пароль", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
+        }
+        private void ShowLoadingPanel()
+        {
+            LoadingPanel.Visibility = Visibility.Visible;
+            loadingTimer.Start();
         }
         private void ShowPasswordButton_Click(object sender, RoutedEventArgs e)
         {
@@ -178,161 +200,93 @@ namespace FurnitureProject
             }
         }
 
-        private SqlConnection connection;
-
-        private SqlConnection GetDatabaseConnection()
-        {
-            connection = new SqlConnection("Server=KIRILL-MARKOV;Database=DataBase;Integrated Security=True;");
-            return connection;
-        }
+        
 
         private void LoadCategories()
         {
-            CategoriesTreeView.Items.Clear();
-
-            try
+            using (var dbContext = new AppDbContext())
             {
-                using (SqlConnection connection = GetDatabaseConnection())
+                var categories = dbContext.Categories
+                    .Include(c => c.Products)
+                    .ToList();
+
+                CategoriesTreeView.Items.Clear();
+
+                foreach (var category in categories)
                 {
-                    connection.Open();
-
-                    string query = @"SELECT cf.id as CategoryId, cf.name as CategoryName, 
-                                        p.id as ProductId, p.name as ProductName, p.price, p.quantity
-                                     FROM Category cf
-                                     LEFT JOIN Product p ON cf.id = p.categoryFurniture_id
-                                     ORDER BY cf.id, p.id";
-
-                    SqlCommand command = new SqlCommand(query, connection);
-                    SqlDataReader reader = command.ExecuteReader();
-
-                    int currentCategoryId = -1;
-                    TreeViewItem currentCategoryItem = null;
-
-                    while (reader.Read())
+                    var categoryNode = new TreeViewItem
                     {
-                        int categoryId = reader.GetInt32(reader.GetOrdinal("CategoryId"));
-                        string categoryName = reader.GetString(reader.GetOrdinal("CategoryName"));
+                        Header = category.Name,
+                        FontSize = 20,
+                        IsExpanded = false,
+                        Tag = category
+                    };
 
-                        if (categoryId != currentCategoryId)
+                    foreach (var product in category.Products)
+                    {
+                        var productNode = new TreeViewItem
                         {
-                            currentCategoryItem = new TreeViewItem
-                            {
-                                Header = categoryName,
-                                FontSize = 20,
-                                IsExpanded = false
-                            };
-                            CategoriesTreeView.Items.Add(currentCategoryItem);
-                            currentCategoryId = categoryId;
-                        }
+                            Header = $"Товар: {product.Name}; Цена: {product.Price:C}; Товаров на складе: {product.Quantity}",
+                            FontSize = 16,
+                            Tag = product
+                        };
 
-                        if (!reader.IsDBNull(reader.GetOrdinal("ProductId")))
-                        {
-                            string name = reader.GetString(reader.GetOrdinal("ProductName"));
-                            decimal price = reader.GetDecimal(reader.GetOrdinal("price"));
-                            int quantity = reader.GetInt32(reader.GetOrdinal("quantity"));
-
-                            TreeViewItem productItem = new TreeViewItem
-                            {
-                                Header = $"Товар: {name}; Цена: {price:C}; Товаров на складе: {quantity}",
-                                FontSize = 16,
-                                IsExpanded = false
-                            };
-
-                            currentCategoryItem?.Items.Add(productItem);
-                        }
+                        categoryNode.Items.Add(productNode);
                     }
 
-                    reader.Close();
+                    CategoriesTreeView.Items.Add(categoryNode);
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Ошибка при загрузке данных: " + ex.Message);
             }
         }
         private void LoadManagerCategoriesAndProducts()
         {
             ManagerCategoriesTreeView.Items.Clear();
-
-            try
+            using (var dbContext = new AppDbContext())
             {
-                using (SqlConnection connection = GetDatabaseConnection())
+                try
                 {
-                    connection.Open();
+                    var categories = dbContext.Categories
+                        .Include(c => c.Products)
+                        .OrderBy(c => c.Id)
+                        .ToList();
 
-                    string query = @"SELECT cf.id as CategoryId, cf.name as CategoryName, 
-                                p.id as ProductId, p.name as ProductName, p.price, p.quantity
-                             FROM Category cf
-                             LEFT JOIN Product p ON cf.id = p.categoryFurniture_id
-                             ORDER BY cf.id, p.id";
-
-                    SqlCommand command = new SqlCommand(query, connection);
-                    SqlDataReader reader = command.ExecuteReader();
-
-                    int currentCategoryId = -1;
-                    TreeViewItem currentCategoryItem = null;
-
-                    while (reader.Read())
+                    foreach (var category in categories)
                     {
-                        int categoryId = reader.GetInt32(reader.GetOrdinal("CategoryId"));
-                        string categoryName = reader.GetString(reader.GetOrdinal("CategoryName"));
-
-                        if (categoryId != currentCategoryId)
+                        var currentCategoryItem = new TreeViewItem
                         {
-                            currentCategoryItem = new TreeViewItem
-                            {
-                                Header = categoryName,
-                                FontSize = 20,
-                                IsExpanded = false
-                            };
-                            ManagerCategoriesTreeView.Items.Add(currentCategoryItem);
-                            currentCategoryId = categoryId;
-                        }
-                        if (!reader.IsDBNull(reader.GetOrdinal("ProductId")))
-                        {
-                            int productId = reader.GetInt32(reader.GetOrdinal("ProductId"));
-                            string productName = reader.GetString(reader.GetOrdinal("ProductName"));
-                            decimal price = reader.GetDecimal(reader.GetOrdinal("price"));
-                            int quantity = reader.GetInt32(reader.GetOrdinal("quantity"));
+                            Header = category.Name,
+                            FontSize = 20,
+                            IsExpanded = false
+                        };
+                        ManagerCategoriesTreeView.Items.Add(currentCategoryItem);
 
-                            TreeViewItem productItem = new TreeViewItem
+                        foreach (var product in category.Products)
+                        {
+                            var productItem = new TreeViewItem
                             {
-                                Header = $"Товар: {productName}; Цена: {price:C}; Товаров на складе: {quantity}",
+                                Header = $"Товар: {product.Name}; Цена: {product.Price:C}; Товаров на складе: {product.Quantity}",
                                 FontSize = 16,
-                                IsExpanded = false,
-                                Tag = productId 
+                                Tag = product 
                             };
-                            currentCategoryItem?.Items.Add(productItem);
+                            currentCategoryItem.Items.Add(productItem);
                         }
                     }
-
-                    reader.Close();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при загрузке данных: " + ex.Message);
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Ошибка при загрузке данных: " + ex.Message);
-            }
-
         }
-        private int? selectedProductId = null; 
+        private int? selectedProductId = null;
 
         private void ManagerCategoriesTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            if (ManagerCategoriesTreeView.SelectedItem is TreeViewItem selectedItem && selectedItem.Tag is int productId)
+            if (ManagerCategoriesTreeView.SelectedItem is TreeViewItem selectedItem && selectedItem.Tag is Product product)
             {
-                selectedProductId = productId; 
-                QuantityControlPanel.Visibility = Visibility.Visible; 
-                using (SqlConnection connection = GetDatabaseConnection())
-                {
-                    connection.Open();
-                    string query = "SELECT quantity FROM Product WHERE id = @ProductId";
-                    SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@ProductId", productId);
-
-                    int quantity = (int)command.ExecuteScalar();
-                    SelectedProductQuantityText.Text = $"Количество: {quantity}";
-                }
+                selectedProductId = product.Id;
+                QuantityControlPanel.Visibility = Visibility.Visible;
+                SelectedProductQuantityText.Text = $"Количество: {product.Quantity}";
             }
             else
             {
@@ -353,23 +307,25 @@ namespace FurnitureProject
 
         private void UpdateProductQuantity(int change)
         {
-            if (selectedProductId.HasValue)
+            if (!selectedProductId.HasValue)
+            {
+                MessageBox.Show("Пожалуйста, выберите товар для изменения количества", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            using (var dbContext = new AppDbContext())
             {
                 try
                 {
-                    using (SqlConnection connection = GetDatabaseConnection())
+                    var product = dbContext.Products.FirstOrDefault(p => p.Id == selectedProductId.Value);
+                    if (product != null)
                     {
-                        connection.Open();
-                        string query = "UPDATE Product SET quantity = quantity + @Change WHERE id = @ProductId";
-                        SqlCommand command = new SqlCommand(query, connection);
-                        command.Parameters.AddWithValue("@Change", change);
-                        command.Parameters.AddWithValue("@ProductId", selectedProductId.Value);
-                        command.ExecuteNonQuery();                       
-                        query = "SELECT quantity FROM Product WHERE id = @ProductId";
-                        command = new SqlCommand(query, connection);
-                        command.Parameters.AddWithValue("@ProductId", selectedProductId.Value);
-                        int newQuantity = (int)command.ExecuteScalar();
-                        UpdateTreeViewItemText(newQuantity);
+                        product.Quantity += change; 
+                        dbContext.SaveChanges();    
+                        UpdateTreeViewItemText(product.Quantity);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Товар не найден", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                 }
                 catch (Exception ex)
@@ -377,16 +333,11 @@ namespace FurnitureProject
                     MessageBox.Show("Ошибка при изменении количества: " + ex.Message);
                 }
             }
-            else
-            {
-                MessageBox.Show("Пожалуйста, выберите товар для изменения количества", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
         }
         private void UpdateTreeViewItemText(int newQuantity)
         {
             if (ManagerCategoriesTreeView.SelectedItem is TreeViewItem selectedItem)
             {
-
                 string headerText = selectedItem.Header.ToString();
                 int index = headerText.LastIndexOf("Товаров на складе: ");
                 if (index != -1)
@@ -395,7 +346,6 @@ namespace FurnitureProject
                     selectedItem.Header = headerText;
                 }
 
-                
                 SelectedProductQuantityText.Text = $"Количество: {newQuantity}";
             }
         }
@@ -404,65 +354,39 @@ namespace FurnitureProject
         private void LoadAdminCategoriesAndProducts()
         {
             AdminCategoriesTreeView.Items.Clear();
-
-            try
-            {
-                using (SqlConnection connection = GetDatabaseConnection())
+            using (var dbContext = new AppDbContext())
+                try
                 {
-                    connection.Open();
+                    var categories = dbContext.Categories
+                        .Include(c => c.Products)
+                        .OrderBy(c => c.Id)
+                        .ToList();
 
-                    string query = @"SELECT cf.id as CategoryId, cf.name as CategoryName, 
-                             p.id as ProductId, p.name as ProductName, p.price, p.quantity
-                             FROM Category cf
-                             LEFT JOIN Product p ON cf.id = p.categoryFurniture_id
-                             ORDER BY cf.id, p.id";
-
-                    SqlCommand command = new SqlCommand(query, connection);
-                    SqlDataReader reader = command.ExecuteReader();
-
-                    int currentCategoryId = -1;
-                    TreeViewItem currentCategoryItem = null;
-
-                    while (reader.Read())
+                    foreach (var category in categories)
                     {
-                        int categoryId = reader.GetInt32(reader.GetOrdinal("CategoryId"));
-                        string categoryName = reader.GetString(reader.GetOrdinal("CategoryName"));
-
-                        if (categoryId != currentCategoryId)
+                        var currentCategoryItem = new TreeViewItem
                         {
-                            currentCategoryItem = new TreeViewItem
-                            {
-                                Header = categoryName,
-                                FontSize = 20,
-                                IsExpanded = false
-                            };
-                            AdminCategoriesTreeView.Items.Add(currentCategoryItem);
-                            currentCategoryId = categoryId;
-                        }
+                            Header = category.Name,
+                            FontSize = 20,
+                            IsExpanded = false
+                        };
+                        AdminCategoriesTreeView.Items.Add(currentCategoryItem);
 
-                        if (!reader.IsDBNull(reader.GetOrdinal("ProductId")))
+                        foreach (var product in category.Products)
                         {
-                            string name = reader.GetString(reader.GetOrdinal("ProductName"));
-                            decimal price = reader.GetDecimal(reader.GetOrdinal("price"));
-                            int quantity = reader.GetInt32(reader.GetOrdinal("quantity"));
-
-                            TreeViewItem productItem = new TreeViewItem
+                            var productItem = new TreeViewItem
                             {
-                                Header = $"Товар: {name}; Цена: {price:C}; Кол-во: {quantity}",
+                                Header = $"Товар: {product.Name}; Цена: {product.Price:C}; Товаров на складе: {product.Quantity}",
                                 FontSize = 16
                             };
-
-                            currentCategoryItem?.Items.Add(productItem);
+                            currentCategoryItem.Items.Add(productItem);
                         }
                     }
-
-                    reader.Close();
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Ошибка при загрузке данных: " + ex.Message);
-            }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при загрузке данных: " + ex.Message);
+                }
         }
 
         private void AddCategoryButton_Click(object sender, RoutedEventArgs e)
@@ -474,6 +398,7 @@ namespace FurnitureProject
 
         private void SaveCategoryButton_Click(object sender, RoutedEventArgs e)
         {
+
             string categoryName = CategoryNameTextBox.Text.Trim();
 
             if (string.IsNullOrEmpty(categoryName))
@@ -481,19 +406,18 @@ namespace FurnitureProject
                 MessageBox.Show("Название категории не может быть пустым.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
+            using (var dbContext = new AppDbContext())
             try
             {
-                using (SqlConnection connection = GetDatabaseConnection())
+                var category = new Category
                 {
-                    connection.Open();
-                    string query = "INSERT INTO Category (name) VALUES (@CategoryName)"; // id не указываем, пусть база сама присвоит
-                    SqlCommand command = new SqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@CategoryName", categoryName);
-                    command.ExecuteNonQuery();
+                    Name = categoryName
+                };
 
-                    MessageBox.Show("Категория успешно добавлена.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
+                dbContext.Categories.Add(category);
+                dbContext.SaveChanges();
+
+                MessageBox.Show("Категория успешно добавлена.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
                 LoadAdminCategoriesAndProducts();
                 AddCategoryPanel.Visibility = Visibility.Collapsed;
                 AdministratorPanel.Visibility = Visibility.Visible;
@@ -512,56 +436,46 @@ namespace FurnitureProject
 
         private void DeleteCategoryButton_Click(object sender, RoutedEventArgs e)
         {
-            if (AdminCategoriesTreeView.SelectedItem is TreeViewItem selectedItem &&
-                selectedItem.Parent is TreeView treeView)
-            {
-                string categoryName = selectedItem.Header.ToString();
-
-                MessageBoxResult result = MessageBox.Show(
-                    $"Вы уверены, что хотите удалить категорию '{categoryName}'? Все связанные товары также будут удалены.",
-                    "Подтверждение удаления",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
-
-                if (result == MessageBoxResult.Yes)
+            using (var dbContext = new AppDbContext())
+                if (AdminCategoriesTreeView.SelectedItem is TreeViewItem selectedItem)
                 {
-                    try
+                    string categoryName = selectedItem.Header.ToString();
+
+                    var category = dbContext.Categories
+                        .FirstOrDefault(c => c.Name == categoryName);
+
+                    if (category != null)
                     {
-                        using (SqlConnection connection = GetDatabaseConnection())
+                        var result = MessageBox.Show(
+                            $"Вы уверены, что хотите удалить категорию '{categoryName}'? Все связанные товары также будут удалены.", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                        if (result == MessageBoxResult.Yes)
                         {
-                            connection.Open();
-                            string query = "SELECT id FROM Category WHERE name = @CategoryName";
-                            SqlCommand command = new SqlCommand(query, connection);
-                            command.Parameters.AddWithValue("@CategoryName", categoryName);
-                            object categoryIdObj = command.ExecuteScalar();
-                            if (categoryIdObj == null)
+
+                            try
                             {
-                                MessageBox.Show("Категория не найдена в базе данных.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                                return;
+                                var products = dbContext.Products.Where(p => p.CategoryFurniture_Id == category.Id).ToList();
+                                dbContext.Products.RemoveRange(products);
+                                dbContext.Categories.Remove(category);
+                                dbContext.SaveChanges();
+
+                                MessageBox.Show($"Категория '{categoryName}' успешно удалена.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                                LoadAdminCategoriesAndProducts();
                             }
-                            int categoryId = Convert.ToInt32(categoryIdObj);
-                            string deleteProductsQuery = "DELETE FROM Product WHERE categoryFurniture_id = @CategoryId";
-                            SqlCommand deleteProductsCommand = new SqlCommand(deleteProductsQuery, connection);
-                            deleteProductsCommand.Parameters.AddWithValue("@CategoryId", categoryId);
-                            deleteProductsCommand.ExecuteNonQuery();
-                            string deleteCategoryQuery = "DELETE FROM Category WHERE id = @CategoryId";
-                            SqlCommand deleteCategoryCommand = new SqlCommand(deleteCategoryQuery, connection);
-                            deleteCategoryCommand.Parameters.AddWithValue("@CategoryId", categoryId);
-                            deleteCategoryCommand.ExecuteNonQuery();
-                            MessageBox.Show($"Категория '{categoryName}' успешно удалена.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-                            LoadAdminCategoriesAndProducts();
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("Ошибка при удалении категории: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                            }
                         }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        MessageBox.Show("Ошибка при удалении категории: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show("Категория не найдена.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
-            }
-            else
-            {
-                MessageBox.Show("Пожалуйста, выберите категорию для удаления.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
+                else
+                {
+                    MessageBox.Show("Пожалуйста, выберите категорию для удаления.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
         }
 
         private void AdminCategoriesTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -610,40 +524,31 @@ namespace FurnitureProject
                 MessageBox.Show("Введите корректное количество.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
+            using (var dbContext = new AppDbContext())
             try
             {
-                using (SqlConnection connection = GetDatabaseConnection())
+                var category = dbContext.Categories.FirstOrDefault(c => c.Name == categoryName);
+                if (category != null)
                 {
-                    connection.Open();
-
-                    string insertQuery = @"
-                INSERT INTO Product (name, categoryFurniture_id, price, quantity)
-                SELECT @ProductName, id, @Price, @Quantity
-                FROM Category
-                WHERE name = @CategoryName";
-
-                    SqlCommand insertCommand = new SqlCommand(insertQuery, connection);
-                    insertCommand.Parameters.AddWithValue("@ProductName", productName);
-                    insertCommand.Parameters.AddWithValue("@CategoryName", categoryName);
-                    insertCommand.Parameters.AddWithValue("@Price", price);
-                    insertCommand.Parameters.AddWithValue("@Quantity", quantity);
-
-                    int rowsAffected = insertCommand.ExecuteNonQuery();
-
-                    if (rowsAffected > 0)
+                    var product = new Product
                     {
-                        MessageBox.Show("Товар успешно добавлен.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                    else
-                    {
-                        MessageBox.Show("Ошибка: Категория не найдена.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
+                        Name = productName,
+                        Price = price,
+                        Quantity = quantity,
+                        CategoryFurniture_Id = category.Id
+                    };
+
+                    dbContext.Products.Add(product);
+                    dbContext.SaveChanges();
+                    MessageBox.Show("Товар успешно добавлен.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    LoadAdminCategoriesAndProducts();
+                    AddProductPanel.Visibility = Visibility.Collapsed;
+                    AdministratorPanel.Visibility = Visibility.Visible;
                 }
-
-                AddProductPanel.Visibility = Visibility.Collapsed;
-                AdministratorPanel.Visibility = Visibility.Visible;
-                LoadAdminCategoriesAndProducts();
+                else
+                {
+                    MessageBox.Show("Ошибка: Категория не найдена.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
             catch (Exception ex)
             {
@@ -662,30 +567,21 @@ namespace FurnitureProject
             if (AdminCategoriesTreeView.SelectedItem is TreeViewItem selectedItem && selectedItem.Parent != AdminCategoriesTreeView)
             {
                 string productInfo = selectedItem.Header.ToString();
-                string[] productParts = productInfo.Split(new string[] { "; Цена: ", "; Кол-во: " }, StringSplitOptions.None);
+                string[] productParts = productInfo.Split(new string[] { "; Цена: ", "; Товаров на складе: " }, StringSplitOptions.None);
                 string productName = productParts[0].Replace("Товар: ", "");
-                MessageBoxResult result = MessageBox.Show(
+                var result = MessageBox.Show(
                     $"Вы уверены, что хотите удалить товар '{productName}'?", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    try
+                using (var dbContext = new AppDbContext())
+                    if (result == MessageBoxResult.Yes)
                     {
-                        string productIdQuery = "SELECT id FROM Product WHERE name = @ProductName";
-                        using (SqlConnection connection = GetDatabaseConnection())
+                        try
                         {
-                            connection.Open();
-                            SqlCommand command = new SqlCommand(productIdQuery, connection);
-                            command.Parameters.AddWithValue("@ProductName", productName);
-                            object productIdObj = command.ExecuteScalar();
+                            var product = dbContext.Products.FirstOrDefault(p => p.Name == productName);
 
-                            if (productIdObj != null)
+                            if (product != null)
                             {
-                                int productId = Convert.ToInt32(productIdObj);
-                                string deleteProductQuery = "DELETE FROM Product WHERE id = @ProductId";
-                                SqlCommand deleteCommand = new SqlCommand(deleteProductQuery, connection);
-                                deleteCommand.Parameters.AddWithValue("@ProductId", productId);
-                                deleteCommand.ExecuteNonQuery();
+                                dbContext.Products.Remove(product);
+                                dbContext.SaveChanges();
                                 MessageBox.Show($"Товар '{productName}' успешно удален.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
                                 LoadAdminCategoriesAndProducts();
                             }
@@ -694,20 +590,16 @@ namespace FurnitureProject
                                 MessageBox.Show("Товар не найден в базе данных.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                             }
                         }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Ошибка при удалении товара: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Ошибка при удалении товара: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
             }
             else
             {
                 MessageBox.Show("Пожалуйста, выберите товар для удаления.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
-
-
-
     }
 }
