@@ -47,6 +47,11 @@
             <Setter Property="FontSize" Value="20"/>
 
         </Style>
+        <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="ToggleButton">
+            <Border x:Name="Border" CornerRadius="10" Background="White" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0">
+                <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2" />
+            </Border>
+        </ControlTemplate>
     </Window.Resources>
     <Grid>
         <Grid.Background>
@@ -68,7 +73,7 @@
                 <TextBlock Text="Пожалуйста, подождите..." FontSize="30" Margin="10" HorizontalAlignment="Center"/>
             </StackPanel>
         </Grid>
-        <StackPanel x:Name="AuthorizationPanel" Visibility="Visible">
+        <StackPanel x:Name="AuthorizationPanel" Visibility="Collapsed">
             <TextBlock Text="Авторизация" FontSize="52" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="55,75,55,65"/>
             <TextBox x:Name="TextBoxInputLogin"  Text="Введите логин" HorizontalAlignment="Center" Style="{StaticResource TextBoxBorderRound}" Foreground="Gray"  Width="400" Height="50" VerticalAlignment="Center" Margin="15" GotFocus="TextBoxInputLogin_GotFocus" LostFocus="TextBoxInputLogin_LostFocus" />
             <Grid HorizontalAlignment="Center" Width="400" Height="50" Margin="15">
@@ -119,15 +124,15 @@
 
         </StackPanel>
 
-        <StackPanel x:Name="AdminSelectionPanel" Visibility="Collapsed" Margin="10">
+        <StackPanel x:Name="AdminSelectionPanel" Visibility="Visible" Margin="10">
             <Button x:Name="BackAuthorizationButtonAdmin" Width="24" Height="24" HorizontalAlignment="Left" BorderThickness="0" Background="Transparent" Margin="25,35,15,15" VerticalAlignment="Center" Click="BackToAuthorization_Click">
                 <Button.Content>
                     <Image Source="/BackAccount.png" />
                 </Button.Content>
             </Button>
-            <TextBlock Text="Выберите раздел" FontSize="18" Margin="0,0,0,10" />
-            <Button Content="Пользователи" Style="{StaticResource ButtonBorderRound}" Click="ShowUsersPanel_Click" Width="150" Height="30" Margin="0,10" />
-            <Button Content="БД" Style="{StaticResource ButtonBorderRound}" Click="ShowDatabasePanel_Click" Width="150" Height="30" Margin="0,10" />
+            <TextBlock Text="Выберите раздел" HorizontalAlignment="Center" FontSize="34" VerticalAlignment="Top" Margin="0,0,0,70" />
+            <Button Content="Управление пользователями" Style="{StaticResource ButtonBorderRound}" Click="ShowUsersPanel_Click" Width="400" Height="40" Margin="20" FontSize="20" />
+            <Button Content="Управление базой данных" Style="{StaticResource ButtonBorderRound}" Click="ShowDatabasePanel_Click" Width="400" Height="40" Margin="10" />
         </StackPanel>
 
         <StackPanel x:Name="UsersPanel" Visibility="Collapsed" Margin="10">
@@ -136,7 +141,7 @@
                     <Image Source="/BackAccount.png" />
                 </Button.Content>
             </Button>
-            <TextBlock Text="Список пользователей" HorizontalAlignment="Center" FontSize="18" Margin="0,0,0,10" />
+            <TextBlock Text="Список пользователей" HorizontalAlignment="Center" FontSize="34" Margin="0,0,0,10" />
             <Border Margin="10 0 10 0" Grid.Row="1" CornerRadius="10" Background="White">
                 <ListView x:Name="UsersListView" Height="300" Margin="0,10,0,10" Padding="10" BorderThickness="0" SelectionChanged="UsersListView_SelectionChanged">
                     <ListView.View>
@@ -191,6 +196,7 @@
         </StackPanel>
 
         <StackPanel x:Name="AddProductPanel" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
+            
             <TextBlock Text="Добавить новый товар" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,15"/>
             <StackPanel>
                 <TextBox x:Name="ProductNameTextBox" Text="Название товара:"  Style="{StaticResource TextBoxBorderRound}" Width="300" Height="50" Margin="0,5,0,15" Foreground="Gray" GotFocus="ProductNameTextBox_GotFocus" LostFocus="ProductNameTextBox_LostFocus"/>
@@ -205,35 +211,125 @@
         </StackPanel>
 
         <StackPanel x:Name="AddUserPanel" Visibility="Collapsed" Margin="10">
-            <TextBlock Text="Добавить пользователя" FontSize="18" Margin="10" />
-            <TextBox x:Name="UserNameTextBox" Margin="2" Style="{StaticResource TextBoxBorderRound}"/>
-            <TextBox x:Name="UserSurnameTextBox" Margin="2" Style="{StaticResource TextBoxBorderRound}"/>
-            <TextBox x:Name="UserPatronymicTextBox"  Margin="2" Style="{StaticResource TextBoxBorderRound}"/>
-            <TextBox x:Name="UserLoginTextBox"  Margin="2" Style="{StaticResource TextBoxBorderRound}"/>
-            <PasswordBox x:Name="UserPasswordBox" Margin="2" Style="{StaticResource PasswordBoxBorderRound}"/>
-            <PasswordBox x:Name="UserPasswordConfirmBox"  Margin="2" Style="{StaticResource PasswordBoxBorderRound}"/>
-            <ComboBox x:Name="RoleComboBox" Margin="2" Height="40">
+            <Grid>
+                <Button  Width="24" Height="24" HorizontalAlignment="Left" BorderThickness="0" Background="Transparent" Margin="20" VerticalAlignment="Center" Click="BackToAdminPanel_Click">
+                    <Button.Content>
+                        <Image Source="/BackAccount.png" />
+                    </Button.Content>
+                </Button>
+                <TextBlock Text="Добавить пользователя" HorizontalAlignment="Center"  FontSize="34" Margin="10,10,10,20" />
+            </Grid>
+
+            <TextBox x:Name="UserNameTextBox" Text="Введите имя" Width="400" Foreground="Gray" Margin="2" Style="{StaticResource TextBoxBorderRound}" GotFocus="UserBoxName_GotFocus" LostFocus="TextBoxInputLogin_LostFocus"/>
+            <TextBox x:Name="UserSurnameTextBox" Text="Введите фамилию" Width="400" Foreground="Gray" Margin="2" Style="{StaticResource TextBoxBorderRound}" GotFocus="UserBoxSurname_GotFocus" LostFocus="TextBoxInputLogin_LostFocus"/>
+            <TextBox x:Name="UserPatronymicTextBox" Text="Введите отчество" Width="400" Foreground="Gray" Margin="2" Style="{StaticResource TextBoxBorderRound}" GotFocus="UserBoxPatronymic_GotFocus" LostFocus="TextBoxInputLogin_LostFocus"/>
+            <TextBox x:Name="UserLoginTextBox" Text="Введите логин" Width="400" Foreground="Gray" Margin="2" Style="{StaticResource TextBoxBorderRound}" GotFocus="UserBoxLogin_GotFocus" LostFocus="TextBoxInputLogin_LostFocus"/>
+            <Grid  Height="50" Margin="2">
+                <PasswordBox x:Name="UserPasswordBox" Width="400" Margin="2" Style="{StaticResource PasswordBoxBorderRound}" GotFocus="UserPasswordBox_GotFocus" LostFocus="UserPasswordBox_LostFocus"/>
+                <TextBlock x:Name="UserPasswordHintText" Width="400" Visibility="Visible" Text="Введите пароль" Foreground="Gray" FontSize="20" VerticalAlignment="Stretch" Padding="12" HorizontalAlignment="Stretch" IsHitTestVisible="False"/>
+            </Grid>
+            <Grid  Height="50" Margin="2">
+                <PasswordBox x:Name="UserPasswordConfirmBox" Width="400"  Margin="2" Style="{StaticResource PasswordBoxBorderRound}" GotFocus="UserPasswordConfirmBox_GotFocus" LostFocus="UserPasswordConfirmBox_LostFocus"/>
+                <TextBlock x:Name="UserPasswordConfirmHintText" Width="400" Visibility="Visible" Text="Повторно введите пароль" Foreground="Gray" FontSize="20" VerticalAlignment="Stretch" Padding="12" HorizontalAlignment="Stretch" IsHitTestVisible="False" />
+            </Grid>
+            <ComboBox x:Name="RoleComboBox" Width="400" FontSize="20" Margin="2,2,2,100" Height="50">
+                <ComboBox.Resources>
+                    <Style TargetType="ComboBox">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ComboBox">
+                                    <Grid>
+                                        <Border x:Name="Border" Background="White" CornerRadius="10" BorderBrush="#FF007EFF" BorderThickness="3">
+                                            <Grid>
+                                                <ToggleButton Name="ToggleButton" Template="{StaticResource ComboBoxToggleButton}" Grid.Column="2" Focusable="false" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press" />
+                                                <ContentPresenter Name="ContentSite" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Margin="6,3,3,3" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                            </Grid>
+                                        </Border>
+                                        <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                                            <Grid Name="DropDown" SnapsToDevicePixels="True" MaxHeight="{TemplateBinding MaxDropDownHeight}" MinWidth="{TemplateBinding ActualWidth}">
+                                                <Border x:Name="DropDownBorder" Background="White" BorderThickness="0" BorderBrush="White" />
+                                                <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
+                                                    <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                                </ScrollViewer>
+                                            </Grid>
+                                        </Popup>
+                                    </Grid>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter TargetName="Border" Property="Background" Value="White" />
+                                            <Setter TargetName="Border" Property="BorderBrush" Value="White" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ComboBox.Resources>
                 <ComboBoxItem Content="Consultant" />
                 <ComboBoxItem Content="Manager" />
                 <ComboBoxItem Content="Administrator" />
             </ComboBox>
-            <Button Content="Создать пользователя" Style="{StaticResource ButtonBorderRound}" Click="CreateUserButton_Click" Width="150" Height="30" />
-            <Button Content="Назад" Style="{StaticResource ButtonBorderRound}" Click="BackToAdminPanel_Click" Width="150" Height="30" Margin="0,10,0,0" />
+
+
+            <Button Content="Создать пользователя" Style="{StaticResource ButtonBorderRound}" Click="CreateUserButton_Click" Width="250" Margin="10,10,10,10"  />
+            
         </StackPanel>
 
         <StackPanel x:Name="UpdateUserPanel" Visibility="Collapsed">
-            <TextBox x:Name="UpdateUserNameTextBox" Margin="5" />
-            <TextBox x:Name="UpdateUserSurnameTextBox" Margin="5" />
-            <TextBox x:Name="UpdateUserPatronymicTextBox" Margin="5" />
-            <TextBox x:Name="UpdateUserLoginTextBox" Margin="5" />
-            <ComboBox x:Name="UpdateUserRoleComboBox" Margin="5">
-                <ComboBoxItem Content="Administrator" />
-                <ComboBoxItem Content="Manager" />
+            <Grid>
+                <Button  Width="24" Height="24" HorizontalAlignment="Left" BorderThickness="0" Background="Transparent" Margin="20" VerticalAlignment="Center" Click="BackToAdminPanel_Click">
+                    <Button.Content>
+                        <Image Source="/BackAccount.png" />
+                    </Button.Content>
+                </Button>
+                <TextBlock Text="Обновление данных о пользователе" HorizontalAlignment="Center"  FontSize="34" Margin="10,10,10,20" />
+            </Grid>
+            <TextBox x:Name="UpdateUserNameTextBox" Width="400" Margin="5" Style="{StaticResource TextBoxBorderRound}"/>
+            <TextBox x:Name="UpdateUserSurnameTextBox" Width="400" Margin="5" Style="{StaticResource TextBoxBorderRound}"/>
+            <TextBox x:Name="UpdateUserPatronymicTextBox" Width="400" Margin="5" Style="{StaticResource TextBoxBorderRound}"/>
+            <TextBlock Text="Логин" Width="400" Margin="10,0,0,0" />
+            <TextBox x:Name="UpdateUserLoginTextBox" Width="400" Margin="5,0,5,5" Style="{StaticResource TextBoxBorderRound}"/>
+            <TextBlock Text="Пароль" Width="400" Margin="10,0,0,0"/>
+            <TextBox x:Name="UpdateUserPasswordTextBox" Width="400" Margin="5,0,5,5" Style="{StaticResource TextBoxBorderRound}"/>
+            <ComboBox x:Name="UpdateUserRoleComboBox" Width="400" FontSize="20" Margin="5, 5, 5, 120" Height="50">
+                <ComboBox.Resources>
+                    <Style TargetType="ComboBox">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ComboBox">
+                                    <Grid>
+                                        <Border x:Name="Border" Background="White" CornerRadius="10" BorderBrush="#FF007EFF" BorderThickness="3">
+                                            <Grid>
+                                                <ToggleButton Name="ToggleButton" Template="{StaticResource ComboBoxToggleButton}" Grid.Column="2" Focusable="false" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press" />
+                                                <ContentPresenter Name="ContentSite" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Margin="6,3,3,3" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                            </Grid>
+                                        </Border>
+                                        <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                                            <Grid Name="DropDown" SnapsToDevicePixels="True" MaxHeight="{TemplateBinding MaxDropDownHeight}" MinWidth="{TemplateBinding ActualWidth}">
+                                                <Border x:Name="DropDownBorder" Background="White" BorderThickness="0" BorderBrush="White" />
+                                                <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
+                                                    <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                                </ScrollViewer>
+                                            </Grid>
+                                        </Popup>
+                                    </Grid>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter TargetName="Border" Property="Background" Value="White" />
+                                            <Setter TargetName="Border" Property="BorderBrush" Value="White" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ComboBox.Resources>
                 <ComboBoxItem Content="Consultant" />
+                <ComboBoxItem Content="Manager" />
+                <ComboBoxItem Content="Administrator" />
             </ComboBox>
-            <TextBox x:Name="UpdateUserPasswordTextBox" Margin="5" />
-            <Button Content="Сохранить изменения" Click="SaveUpdatedUserButton_Click" Margin="5" />
-            <Button Content="Отмена" Click="BackToAdminPanel_Click" Margin="5" />
+            <Button Content="Сохранить изменения" Click="SaveUpdatedUserButton_Click" VerticalAlignment="Bottom" Margin="5" Width="250" Style="{StaticResource ButtonBorderRound}"/>
+            
         </StackPanel>
 
 

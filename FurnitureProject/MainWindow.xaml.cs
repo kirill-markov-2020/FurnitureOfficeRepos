@@ -26,10 +26,42 @@ namespace FurnitureProject
 
         private void TextBoxInputLogin_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (TextBoxInputLogin.Text == "Введите логин")
+            if (TextBoxInputLogin.Text == "Введите логин" || UserLoginTextBox.Text == "Введите логин")
             {
                 TextBoxInputLogin.Text = "";
                 TextBoxInputLogin.Foreground = Brushes.Black;
+            }
+        }
+        private void UserBoxLogin_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (UserLoginTextBox.Text == "Введите логин")
+            {
+                UserLoginTextBox.Text = "";
+                UserLoginTextBox.Foreground = Brushes.Black;
+            }
+        }
+        private void UserBoxName_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (UserNameTextBox.Text == "Введите имя")
+            {
+                UserNameTextBox.Text = "";
+                UserNameTextBox.Foreground = Brushes.Black;
+            }
+        }
+        private void UserBoxSurname_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (UserSurnameTextBox.Text == "Введите фамилию")
+            {
+                UserSurnameTextBox.Text = "";
+                UserSurnameTextBox.Foreground = Brushes.Black;
+            }
+        }
+        private void UserBoxPatronymic_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (UserPatronymicTextBox.Text == "Введите отчество")
+            {
+                UserPatronymicTextBox.Text = "";
+                UserPatronymicTextBox.Foreground = Brushes.Black;
             }
         }
         private void ProductNameTextBox_GotFocus(object sender, RoutedEventArgs e)
@@ -63,6 +95,26 @@ namespace FurnitureProject
                 TextBoxInputLogin.Text = "Введите логин";
                 TextBoxInputLogin.Foreground = Brushes.Gray;
             }
+            if (string.IsNullOrWhiteSpace(UserLoginTextBox.Text))
+            {
+                UserLoginTextBox.Text = "Введите логин";
+                UserLoginTextBox.Foreground = Brushes.Gray;
+            }
+            if (string.IsNullOrWhiteSpace(UserNameTextBox.Text))
+            {
+                UserNameTextBox.Text = "Введите имя";
+                UserNameTextBox.Foreground = Brushes.Gray;
+            }
+            if (string.IsNullOrWhiteSpace(UserSurnameTextBox.Text))
+            {
+                UserSurnameTextBox.Text = "Введите фамилию";
+                UserSurnameTextBox.Foreground = Brushes.Gray;
+            }
+            if (string.IsNullOrWhiteSpace(UserPatronymicTextBox.Text))
+            {
+                UserPatronymicTextBox.Text = "Введите отчество";
+                UserPatronymicTextBox.Foreground = Brushes.Gray;
+            }
         }
         private void ProductNameTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
@@ -92,12 +144,35 @@ namespace FurnitureProject
         {
             PasswordHintText.Visibility = Visibility.Collapsed;
         }
+        private void UserPasswordBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            UserPasswordHintText.Visibility = Visibility.Collapsed;
+        }
+        private void UserPasswordConfirmBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            UserPasswordConfirmHintText.Visibility = Visibility.Collapsed;
+        }
+
 
         private void PasswordBox_LostFocus(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(PasswordBox.Password))
             {
                 PasswordHintText.Visibility = Visibility.Visible;
+            }
+        }
+        private void UserPasswordBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(UserPasswordBox.Password))
+            {
+                UserPasswordHintText.Visibility = Visibility.Visible;
+            }
+        }
+        private void UserPasswordConfirmBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(UserPasswordConfirmBox.Password))
+            {
+                UserPasswordConfirmHintText.Visibility = Visibility.Visible;
             }
         }
 
