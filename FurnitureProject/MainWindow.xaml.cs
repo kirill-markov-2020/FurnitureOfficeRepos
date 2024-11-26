@@ -105,7 +105,7 @@ namespace FurnitureProject
         {
             loadingTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromSeconds(3.7)
+                Interval = TimeSpan.FromSeconds(3.8)
             };
             loadingTimer.Tick += (s, e) =>
             {
@@ -200,13 +200,7 @@ namespace FurnitureProject
             }
         }
 
-        private SqlConnection connection;
-
-        private SqlConnection GetDatabaseConnection()
-        {
-            connection = new SqlConnection("Server=KIRILL-MARKOV;Database=DataBase;Integrated Security=True;");
-            return connection;
-        }
+        
 
         private void LoadCategories()
         {
