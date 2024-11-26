@@ -671,6 +671,71 @@ namespace FurnitureProject
             }
         }
 
+        private void AddUserButton_Click(object sender, RoutedEventArgs e)
+        {
+            UsersPanel.Visibility = Visibility.Collapsed;
+            AddUserPanel.Visibility = Visibility.Visible;
+        }
+
+        private void CreateUserButton_Click(object sender, RoutedEventArgs e)
+        {
+            string login = UserLoginTextBox.Text.Trim();
+            string password = UserPasswordBox.Password;
+            string confirmPassword = UserPasswordConfirmBox.Password;
+            string role = (RoleComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+
+            if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(confirmPassword))
+            {
+                MessageBox.Show("Заполните все поля.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (password != confirmPassword)
+            {
+                MessageBox.Show("Пароли не совпадают.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(role))
+            {
+                MessageBox.Show("Выберите роль пользователя.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            try
+            {
+                using (var dbContext = new AppDbContext())
+                {
+                    if (dbContext.Users.Any(u => u.Login == login))
+                    {
+                        MessageBox.Show("Пользователь с таким логином уже существует.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+                    var newUser = new User
+                    {
+                        Login = login,
+                        Password = password,
+                        Role = role
+                    };
+                    dbContext.Users.Add(newUser);
+                    dbContext.SaveChanges();
+                }
+
+                MessageBox.Show("Пользователь успешно создан!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                BackToAdminPanel_Click(sender, e);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при добавлении пользователя: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        private void BackToAdminPanel_Click(object sender, RoutedEventArgs e)
+        {
+            AddUserPanel.Visibility = Visibility.Collapsed;
+            UsersPanel.Visibility = Visibility.Visible;
+            UserLoginTextBox.Text = string.Empty;
+            UserPasswordBox.Password = string.Empty;
+            UserPasswordConfirmBox.Password = string.Empty;
+            RoleComboBox.SelectedIndex = -1;
+        }
+
 
 
     }

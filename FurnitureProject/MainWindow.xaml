@@ -147,10 +147,7 @@
                     </ListView.View>
                 </ListView>
             </Border>
-
-            
-
-
+            <Button Content="Добавить пользователя" Style="{StaticResource ButtonBorderRound}" Click="AddUserButton_Click" Width="150" Height="30" Margin="0,0,0,10" />
 
         </StackPanel>
 
@@ -198,6 +195,20 @@
                 <Button x:Name="SaveProductButton" Content="Добавить" Style="{StaticResource ButtonBorderRound}" Width="150" Height="40" Click="SaveProductButton_Click" Margin="10,0,10,0"/>
                 <Button x:Name="CancelAddProductButton" Content="Отмена" Style="{StaticResource ButtonBorderRound}" Width="150" Height="40" Click="CancelAddProductButton_Click" />
             </StackPanel>
+        </StackPanel>
+
+        <StackPanel x:Name="AddUserPanel" Visibility="Collapsed" Margin="10">
+            <TextBlock Text="Добавить пользователя" FontSize="18" Margin="0,0,0,10" />
+            <TextBox x:Name="UserLoginTextBox"  Margin="0,0,0,10" />
+            <PasswordBox x:Name="UserPasswordBox" Margin="0,0,0,10" />
+            <PasswordBox x:Name="UserPasswordConfirmBox"  Margin="0,0,0,10" />
+            <ComboBox x:Name="RoleComboBox" Margin="0,0,0,10">
+                <ComboBoxItem Content="Consultant" />
+                <ComboBoxItem Content="Manager" />
+                <ComboBoxItem Content="Administrator" />
+            </ComboBox>
+            <Button Content="Создать пользователя" Click="CreateUserButton_Click" Width="150" Height="30" />
+            <Button Content="Назад" Click="BackToAdminPanel_Click" Width="150" Height="30" Margin="0,10,0,0" />
         </StackPanel>
 
     </Grid>
