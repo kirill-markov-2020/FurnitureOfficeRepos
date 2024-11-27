@@ -7,6 +7,7 @@ using System.Diagnostics;
 
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -26,8 +27,10 @@ namespace FurnitureProject
         {
             InitializeComponent();
             InitializeLoadingTimer();
+            Loaded += (s, e) => CheckDatabaseConnectionAsync();
+            StartConnectionCheckTimer();
         }
-
+        
         private void TextBoxInputLogin_GotFocus(object sender, RoutedEventArgs e)
         {
             if (TextBoxInputLogin.Text == "Введите логин")
@@ -194,6 +197,55 @@ namespace FurnitureProject
                 UserPasswordConfirmHintText.Visibility = Visibility.Visible;
             }
         }
+
+
+        private void StartConnectionCheckTimer()
+        {
+            loadingTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            loadingTimer.Tick += (s, e) => CheckDatabaseConnectionAsync();
+            loadingTimer.Start();
+        }
+
+        private async void CheckDatabaseConnectionAsync()
+        {
+            bool isConnected = await Task.Run(() =>
+            {
+                try
+                {
+                    using (var dbContext = new AppDbContext())
+                    {
+                        return dbContext.Database.CanConnect();
+                    }
+                }
+                catch
+                {
+                    return false;
+                }
+            });
+
+            UpdateConnectionStatus(isConnected);
+        }
+
+        private void UpdateConnectionStatus(bool isConnected)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (isConnected)
+                {
+                    
+                    DbConnectionStatus.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    DbConnectionStatus.Visibility = Visibility.Visible;
+                }
+            });
+        }
+
+
 
         private DispatcherTimer loadingTimer;
         private void InitializeLoadingTimer()

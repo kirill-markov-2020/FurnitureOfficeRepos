@@ -84,9 +84,14 @@
 
                 <TextBlock x:Name="PasswordHintText" Visibility="Visible" Text="Введите пароль" Foreground="Gray" FontSize="20" VerticalAlignment="Stretch" Padding="12" HorizontalAlignment="Stretch" IsHitTestVisible="False"/>
                 <Button x:Name="ShowPasswordButton" Content="👁" HorizontalAlignment="Right" VerticalAlignment="Center" Width="30" Height="30" Margin="0,0,12,0" Background="Transparent" BorderBrush="Transparent" FontSize="20" Click="ShowPasswordButton_Click"/>
-            </Grid>
+                
+            </Grid> 
             <Button x:Name="AuthorizationButton" Content="Войти" HorizontalAlignment="Center" Style="{StaticResource ButtonBorderRound}" VerticalAlignment="Center" Width="150" Height="50" FontSize="20"  Margin="45" Click="AuthorizationButton_Click"/>
-            
+            <Image x:Name="DbConnectionStatus" Visibility="Visible" Width="50" Height="50" HorizontalAlignment="Right" Source="/warning.png" Margin="10,50,10,10" >
+                <Image.ToolTip>
+                    <ToolTip Content="Соединение с базой данных не установлено." />
+                </Image.ToolTip>
+            </Image>
         </StackPanel>
         <Grid x:Name="CaptchaPanel" Visibility="Collapsed">
             <Grid.RowDefinitions>
