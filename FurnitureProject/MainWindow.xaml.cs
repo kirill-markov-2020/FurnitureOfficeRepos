@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -25,10 +26,42 @@ namespace FurnitureProject
 
         private void TextBoxInputLogin_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (TextBoxInputLogin.Text == "Введите логин")
+            if (TextBoxInputLogin.Text == "Введите логин" || UserLoginTextBox.Text == "Введите логин")
             {
                 TextBoxInputLogin.Text = "";
                 TextBoxInputLogin.Foreground = Brushes.Black;
+            }
+        }
+        private void UserBoxLogin_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (UserLoginTextBox.Text == "Введите логин")
+            {
+                UserLoginTextBox.Text = "";
+                UserLoginTextBox.Foreground = Brushes.Black;
+            }
+        }
+        private void UserBoxName_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (UserNameTextBox.Text == "Введите имя")
+            {
+                UserNameTextBox.Text = "";
+                UserNameTextBox.Foreground = Brushes.Black;
+            }
+        }
+        private void UserBoxSurname_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (UserSurnameTextBox.Text == "Введите фамилию")
+            {
+                UserSurnameTextBox.Text = "";
+                UserSurnameTextBox.Foreground = Brushes.Black;
+            }
+        }
+        private void UserBoxPatronymic_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (UserPatronymicTextBox.Text == "Введите отчество")
+            {
+                UserPatronymicTextBox.Text = "";
+                UserPatronymicTextBox.Foreground = Brushes.Black;
             }
         }
         private void ProductNameTextBox_GotFocus(object sender, RoutedEventArgs e)
@@ -62,6 +95,26 @@ namespace FurnitureProject
                 TextBoxInputLogin.Text = "Введите логин";
                 TextBoxInputLogin.Foreground = Brushes.Gray;
             }
+            if (string.IsNullOrWhiteSpace(UserLoginTextBox.Text))
+            {
+                UserLoginTextBox.Text = "Введите логин";
+                UserLoginTextBox.Foreground = Brushes.Gray;
+            }
+            if (string.IsNullOrWhiteSpace(UserNameTextBox.Text))
+            {
+                UserNameTextBox.Text = "Введите имя";
+                UserNameTextBox.Foreground = Brushes.Gray;
+            }
+            if (string.IsNullOrWhiteSpace(UserSurnameTextBox.Text))
+            {
+                UserSurnameTextBox.Text = "Введите фамилию";
+                UserSurnameTextBox.Foreground = Brushes.Gray;
+            }
+            if (string.IsNullOrWhiteSpace(UserPatronymicTextBox.Text))
+            {
+                UserPatronymicTextBox.Text = "Введите отчество";
+                UserPatronymicTextBox.Foreground = Brushes.Gray;
+            }
         }
         private void ProductNameTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
@@ -91,12 +144,35 @@ namespace FurnitureProject
         {
             PasswordHintText.Visibility = Visibility.Collapsed;
         }
+        private void UserPasswordBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            UserPasswordHintText.Visibility = Visibility.Collapsed;
+        }
+        private void UserPasswordConfirmBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            UserPasswordConfirmHintText.Visibility = Visibility.Collapsed;
+        }
+
 
         private void PasswordBox_LostFocus(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(PasswordBox.Password))
             {
                 PasswordHintText.Visibility = Visibility.Visible;
+            }
+        }
+        private void UserPasswordBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(UserPasswordBox.Password))
+            {
+                UserPasswordHintText.Visibility = Visibility.Visible;
+            }
+        }
+        private void UserPasswordConfirmBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(UserPasswordConfirmBox.Password))
+            {
+                UserPasswordConfirmHintText.Visibility = Visibility.Visible;
             }
         }
 
@@ -118,7 +194,7 @@ namespace FurnitureProject
                         LoadManagerCategoriesAndProducts();
                         break;
                     case "Administrator":
-                        AdministratorPanel.Visibility = Visibility.Visible;
+                        AdminSelectionPanel.Visibility = Visibility.Visible;
                         LoadAdminCategoriesAndProducts();
                         break;
                     case "Consultant":
@@ -131,33 +207,57 @@ namespace FurnitureProject
         private string CurrentRole;
         private void AuthorizationButton_Click(object sender, RoutedEventArgs e)
         {
-            if (TextBoxInputLogin.Text == "ManagerLogin" && PasswordBox.Password == "ManagerPassword")
-            {
-                CurrentRole = "Manager";
-                AuthorizationPanel.Visibility = Visibility.Collapsed;
-                ShowLoadingPanel();
-            }
-            else if (TextBoxInputLogin.Text == "AdministratorLogin" && PasswordBox.Password == "AdministratorPassword")
-            {
-                CurrentRole = "Administrator";
-                AuthorizationPanel.Visibility = Visibility.Collapsed;
-                ShowLoadingPanel();
-            }
-            else if (TextBoxInputLogin.Text == "ConsultantLogin" && PasswordBox.Password == "ConsultantPassword")
-            {
-                CurrentRole = "Consultant";
-                AuthorizationPanel.Visibility = Visibility.Collapsed;
-                ShowLoadingPanel();
-            }
-            else if (TextBoxInputLogin.Text == "Введите логин" && PasswordBox.Password == "")
+            if (TextBoxInputLogin.Text == "Введите логин" || string.IsNullOrWhiteSpace(PasswordBox.Password))
             {
                 MessageBox.Show("Введите логин или пароль", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
-            else
+
+            using (var dbContext = new AppDbContext())
             {
-                MessageBox.Show("Неверный логин или пароль", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                try
+                {
+                    var user = dbContext.Users
+                        .FirstOrDefault(u => u.Login == TextBoxInputLogin.Text && u.Password == PasswordBox.Password);
+
+                    if (user != null)
+                    {
+                        CurrentRole = user.Role;
+                        AuthorizationPanel.Visibility = Visibility.Collapsed;                      
+                        switch (CurrentRole)
+                        {
+                            case "Manager":
+                                ShowLoadingPanel();
+                                LoadManagerCategoriesAndProducts();
+                                break;
+                            case "Administrator":
+                                ShowLoadingPanel(); 
+                                break;
+                            case "Consultant":
+                                ShowLoadingPanel();
+                                LoadCategories();
+                                break;
+                            default:
+                                MessageBox.Show("Неизвестная роль пользователя.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                AuthorizationPanel.Visibility = Visibility.Visible;
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Неверный логин или пароль", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при авторизации: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Debug.WriteLine(ex.Message);
+                }
             }
         }
+
+
+
         private void ShowLoadingPanel()
         {
             LoadingPanel.Visibility = Visibility.Visible;
@@ -194,7 +294,7 @@ namespace FurnitureProject
                 PasswordBox.Password = string.Empty;
                 PasswordHintText.Visibility = Visibility.Visible;
                 ManagerPanel.Visibility = Visibility.Collapsed;
-                AdministratorPanel.Visibility = Visibility.Collapsed;
+                AdminSelectionPanel.Visibility = Visibility.Collapsed;
                 ConsultantPanel.Visibility = Visibility.Collapsed;
                 AuthorizationPanel.Visibility = Visibility.Visible;
             }
@@ -601,5 +701,240 @@ namespace FurnitureProject
                 MessageBox.Show("Пожалуйста, выберите товар для удаления.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+
+
+
+
+
+
+
+
+
+        // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+
+        private void ShowUsersPanel_Click(object sender, RoutedEventArgs e)
+        {
+            AdminSelectionPanel.Visibility = Visibility.Collapsed;
+            UsersPanel.Visibility = Visibility.Visible;
+            LoadUsers();
+
+        }
+
+        private void ShowDatabasePanel_Click(object sender, RoutedEventArgs e)
+        {
+            AdminSelectionPanel.Visibility = Visibility.Collapsed;
+            AdministratorPanel.Visibility = Visibility.Visible;
+        }
+
+        private void BackToAdminSelectionPanel_Click(object sender, RoutedEventArgs e)
+        {
+            UsersPanel.Visibility = Visibility.Collapsed;
+            AdministratorPanel.Visibility = Visibility.Collapsed;
+            AdminSelectionPanel.Visibility = Visibility.Visible;
+        }
+
+        private void LoadUsers()
+        {
+            using (var dbContext = new AppDbContext())
+            {
+                var users = dbContext.Users.ToList();
+                UsersListView.ItemsSource = null; 
+                UsersListView.ItemsSource = users;
+            }
+        }
+
+        private void AddUserButton_Click(object sender, RoutedEventArgs e)
+        {
+            UsersPanel.Visibility = Visibility.Collapsed;
+            AddUserPanel.Visibility = Visibility.Visible;
+        }
+
+        private void CreateUserButton_Click(object sender, RoutedEventArgs e)
+        {
+            string name = UserNameTextBox.Text.Trim();
+            string surname = UserSurnameTextBox.Text.Trim();
+            string patronymic = UserPatronymicTextBox.Text.Trim();
+            string login = UserLoginTextBox.Text.Trim();
+            string password = UserPasswordBox.Password;
+            string confirmPassword = UserPasswordConfirmBox.Password;
+            string role = (RoleComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+
+            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(surname) ||
+                string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(password) ||
+                string.IsNullOrWhiteSpace(confirmPassword))
+            {
+                MessageBox.Show("Заполните все поля.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (password != confirmPassword)
+            {
+                MessageBox.Show("Пароли не совпадают.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                using (var dbContext = new AppDbContext())
+                {
+                    if (dbContext.Users.Any(u => u.Login == login))
+                    {
+                        MessageBox.Show("Пользователь с таким логином уже существует.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    var newUser = new User
+                    {
+                        Name = name,
+                        Surname = surname,
+                        Patronymic = patronymic,
+                        Login = login,
+                        Password = password,
+                        Role = role
+                    };
+
+                    dbContext.Users.Add(newUser);
+                    dbContext.SaveChanges();
+                }
+
+                MessageBox.Show("Пользователь успешно создан!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                BackToAdminPanel_Click(sender, e);
+                LoadUsers();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при добавлении пользователя: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void BackToAdminPanel_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateUserPanel.Visibility = Visibility.Collapsed;
+            AddUserPanel.Visibility = Visibility.Collapsed;
+            UsersPanel.Visibility = Visibility.Visible;
+            UserNameTextBox.Text = string.Empty;
+            UserSurnameTextBox.Text = string.Empty;
+            UserPatronymicTextBox.Text = string.Empty;
+            UserLoginTextBox.Text = string.Empty;
+            UserPasswordBox.Password = string.Empty;
+            UserPasswordConfirmBox.Password = string.Empty;
+            RoleComboBox.SelectedIndex = -1;
+            UpdateUserNameTextBox.Text = string.Empty;
+            UpdateUserSurnameTextBox.Text = string.Empty;
+            UpdateUserPatronymicTextBox.Text = string.Empty;
+            UpdateUserLoginTextBox.Text = string.Empty;
+            UpdateUserRoleComboBox.SelectedIndex = -1;
+            UpdateUserPasswordTextBox.Text = string.Empty;
+            LoadUsers();
+        }
+
+        //УДАЛЕНИЕ ПОЛЬЗОВАТЕЛЕЙ
+
+        private void UsersListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {         
+            DeleteUserButton.IsEnabled = UsersListView.SelectedItem != null;
+            UpdateUserButton.IsEnabled = UsersListView.SelectedItem != null;
+        }
+
+        private void DeleteUserButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (UsersListView.SelectedItem == null) return;
+            var selectedUser = (dynamic)UsersListView.SelectedItem;
+            string loginToDelete = selectedUser.Login;
+
+            MessageBoxResult result = MessageBox.Show(
+                $"Вы действительно хотите удалить пользователя '{loginToDelete}'?",
+                "Подтверждение удаления",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question
+            );
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    using (var dbContext = new AppDbContext())
+                    {
+                        var user = dbContext.Users.FirstOrDefault(u => u.Login == loginToDelete);
+                        if (user != null)
+                        {
+                            dbContext.Users.Remove(user);
+                            dbContext.SaveChanges();
+                            MessageBox.Show("Пользователь успешно удален.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                            LoadUsers();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Пользователь не найден.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при удалении пользователя: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        //ОБНОВЛЕНИЕ ПОЛЬЗОВАТЕЛЕЙ
+
+        private void UpdateUserButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (UsersListView.SelectedItem is User selectedUser)
+            {
+                UpdateUserPanel.Visibility = Visibility.Visible;
+                UsersPanel.Visibility = Visibility.Collapsed;
+                UpdateUserNameTextBox.Text = selectedUser.Name;
+                UpdateUserSurnameTextBox.Text = selectedUser.Surname;
+                UpdateUserPatronymicTextBox.Text = selectedUser.Patronymic;
+                UpdateUserLoginTextBox.Text = selectedUser.Login;
+                UpdateUserRoleComboBox.SelectedItem = selectedUser.Role;
+                UpdateUserPasswordTextBox.Text = selectedUser.Password;
+            }
+        }
+
+        private void SaveUpdatedUserButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (UsersListView.SelectedItem is User selectedUser)
+            {
+                try
+                {
+                    using (var dbContext = new AppDbContext())
+                    {
+                        var userToUpdate = dbContext.Users.FirstOrDefault(u => u.Id == selectedUser.Id);
+
+                        if (userToUpdate != null)
+                        {
+                            userToUpdate.Name = UpdateUserNameTextBox.Text.Trim();
+                            userToUpdate.Surname = UpdateUserSurnameTextBox.Text.Trim();
+                            userToUpdate.Patronymic = UpdateUserPatronymicTextBox.Text.Trim();
+                            userToUpdate.Login = UpdateUserLoginTextBox.Text.Trim();
+                            userToUpdate.Role = (UpdateUserRoleComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+                            userToUpdate.Password = UpdateUserPasswordTextBox.Text.Trim();
+                            dbContext.SaveChanges();
+                            MessageBox.Show("Данные пользователя успешно обновлены!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                            LoadUsers();
+                            BackToAdminPanel_Click(sender, e);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при обновлении данных: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
     }
 }
