@@ -4,6 +4,7 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
+
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -11,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+
 
 
 namespace FurnitureProject
@@ -28,7 +30,7 @@ namespace FurnitureProject
 
         private void TextBoxInputLogin_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (TextBoxInputLogin.Text == "Введите логин" || UserLoginTextBox.Text == "Введите логин")
+            if (TextBoxInputLogin.Text == "Введите логин")
             {
                 TextBoxInputLogin.Text = "";
                 TextBoxInputLogin.Foreground = Brushes.Black;
@@ -87,9 +89,18 @@ namespace FurnitureProject
             if (ProductQuantityTextBox.Text == "Количество:")
             {
                 ProductQuantityTextBox.Text = "";
-                ProductQuantityTextBox.Foreground = Brushes.Black;
+                ProductQuantityTextBox.Foreground =     Brushes.Black;
             }
         }
+        private void CaptchaInputTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (CaptchaInputTextBox.Text == "Введите текст капчи")
+            {
+                CaptchaInputTextBox.Text = "";
+                CaptchaInputTextBox.Foreground = Brushes.Black;
+            }
+        }
+
         private void TextBoxInputLogin_LostFocus(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(TextBoxInputLogin.Text))
@@ -115,8 +126,14 @@ namespace FurnitureProject
             if (string.IsNullOrWhiteSpace(UserPatronymicTextBox.Text))
             {
                 UserPatronymicTextBox.Text = "Введите отчество";
-                UserPatronymicTextBox.Foreground = Brushes.Gray;
+                UserPatronymicTextBox.Foreground =  Brushes.Gray;
             }
+            if (string.IsNullOrWhiteSpace(CaptchaInputTextBox.Text))
+            {
+                CaptchaInputTextBox.Text = "Введите текст капчи";
+                CaptchaInputTextBox.Foreground = Brushes.Gray; 
+            }
+
         }
         private void ProductNameTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
@@ -209,17 +226,6 @@ namespace FurnitureProject
         private string CurrentRole;
         private void AuthorizationButton_Click(object sender, RoutedEventArgs e)
         {
-            if (CaptchaTextBox.Visibility == Visibility.Visible)
-            {
-                if (CaptchaTextBox.Text != currentCaptchaText)
-                {
-                    MessageBox.Show("Неправильный текст капчи.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-                CaptchaTextBox.Visibility = Visibility.Collapsed;
-                CaptchaImage.Visibility = Visibility.Collapsed;
-                failedAttempts = 0;
-            }
             if (TextBoxInputLogin.Text == "Введите логин" || string.IsNullOrWhiteSpace(PasswordBox.Password))
             {
                 MessageBox.Show("Введите логин или пароль", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -234,8 +240,8 @@ namespace FurnitureProject
                 if (user != null)
                 {
                     CurrentRole = user.Role;
+                    failedAttempts = 0; 
                     AuthorizationPanel.Visibility = Visibility.Collapsed;
-
                     switch (CurrentRole)
                     {
                         case "Manager":
@@ -250,7 +256,7 @@ namespace FurnitureProject
                             LoadCategories();
                             break;
                         default:
-                            MessageBox.Show("Неизвестная роль пользователя.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            MessageBox.Show("Неизвестная роль.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                             AuthorizationPanel.Visibility = Visibility.Visible;
                             break;
                     }
@@ -258,21 +264,18 @@ namespace FurnitureProject
                 else
                 {
                     failedAttempts++;
-
                     if (failedAttempts >= 5)
                     {
-                        currentCaptchaText = GenerateCaptchaText();
-                        CaptchaImage.Source = GenerateCaptchaImage(currentCaptchaText);
-                        CaptchaImage.Visibility = Visibility.Visible;
-                        CaptchaTextBox.Visibility = Visibility.Visible;
+                        ShowCaptchaPanel();
                     }
                     else
                     {
-                        MessageBox.Show("Неверный логин или пароль", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show("Неверный логин или пароль.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                 }
             }
         }
+
 
 
         private int failedAttempts = 0;
@@ -326,6 +329,38 @@ namespace FurnitureProject
             }
             return bitmapImage;
         }
+        private void ShowCaptchaPanel()
+        {
+            AuthorizationPanel.Visibility = Visibility.Collapsed;
+            CaptchaPanel.Visibility = Visibility.Visible;
+            currentCaptchaText = GenerateCaptchaText();
+            CaptchaImageBox.Source = GenerateCaptchaImage(currentCaptchaText);
+        }
+
+        private void ShowAuthorizationPanel()
+        {
+            CaptchaPanel.Visibility = Visibility.Collapsed;
+            AuthorizationPanel.Visibility = Visibility.Visible;
+        }
+        private void CaptchaSubmitButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (CaptchaInputTextBox.Text == currentCaptchaText)
+            {
+                MessageBox.Show("Капча пройдена!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                failedAttempts = 0; 
+                CaptchaInputTextBox.Clear();
+                ShowAuthorizationPanel();
+            }
+            else
+            {
+                MessageBox.Show("Неправильный текст капчи... Попробуйте снова.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                currentCaptchaText = GenerateCaptchaText();
+                CaptchaImageBox.Source = GenerateCaptchaImage(currentCaptchaText);
+                CaptchaInputTextBox.Text = "Введите текст капчи";
+               
+            }
+        }
+
 
 
         private void ShowLoadingPanel()
@@ -673,7 +708,7 @@ namespace FurnitureProject
                 ProductQuantityTextBox.Text = "Количество:";
                 ProductQuantityTextBox.Foreground = Brushes.Gray;
                 ProductPriceTextBox.Text = "Стоимость:";
-                ProductPriceTextBox.Foreground = Brushes.Gray;
+                ProductPriceTextBox.Foreground =  Brushes.Gray;
                 ProductNameTextBox.Text = "Название товара:";
                 ProductNameTextBox.Foreground = Brushes.Gray;
             }

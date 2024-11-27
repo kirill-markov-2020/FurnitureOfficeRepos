@@ -86,9 +86,24 @@
                 <Button x:Name="ShowPasswordButton" Content="👁" HorizontalAlignment="Right" VerticalAlignment="Center" Width="30" Height="30" Margin="0,0,12,0" Background="Transparent" BorderBrush="Transparent" FontSize="20" Click="ShowPasswordButton_Click"/>
             </Grid>
             <Button x:Name="AuthorizationButton" Content="Войти" HorizontalAlignment="Center" Style="{StaticResource ButtonBorderRound}" VerticalAlignment="Center" Width="150" Height="50" FontSize="20"  Margin="45" Click="AuthorizationButton_Click"/>
-            <TextBox x:Name="CaptchaTextBox" Visibility="Collapsed" Width="300" Height="40" FontSize="20" Margin="10" HorizontalAlignment="Center" />
-            <Image x:Name="CaptchaImage" Visibility="Collapsed" Width="300" Height="100" Margin="10" HorizontalAlignment="Center" />
+            
         </StackPanel>
+        <Grid x:Name="CaptchaPanel" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Margin="10 0 10 0" Grid.Row="2" Width="300" Height="100" BorderBrush="#FF007EFF" BorderThickness="3" CornerRadius="10" Background="White">
+                <Image x:Name="CaptchaImageBox" Margin="0,10,0,10" HorizontalAlignment="Center" />
+
+            </Border>
+            <TextBox x:Name="CaptchaInputTextBox" Style="{StaticResource TextBoxBorderRound}" Grid.Row="1" Text="Введите текст капчи" Foreground="Gray"  Width="300" Height="50" FontSize="20" Margin="10" HorizontalAlignment="Center" GotFocus="CaptchaInputTextBox_GotFocus" LostFocus="TextBoxInputLogin_LostFocus"/>
+            <Button Content="Проверить" Grid.Row="3" Style="{StaticResource ButtonBorderRound}" Width="150" Height="40" HorizontalAlignment="Center" Click="CaptchaSubmitButton_Click" />
+        </Grid>
         <StackPanel x:Name="ConsultantPanel" Visibility="Collapsed">
             <Grid>
                 <Button x:Name="BackAuthorizationButton" Width="24" Height="24" HorizontalAlignment="Left" BorderThickness="0" Background="Transparent" Margin="25,35,15,15" VerticalAlignment="Center" Click="BackToAuthorization_Click">
