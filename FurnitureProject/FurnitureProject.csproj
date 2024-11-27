@@ -248,6 +248,24 @@
   <ItemGroup>
     <Resource Include="warning.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Снимок экрана 2024-11-27 145939.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Figma basics.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="stili.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="stili.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="ываыва.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="png.jpg" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Data.SqlClient.SNI.1.1.0\build\net46\Microsoft.Data.SqlClient.SNI.targets" Condition="Exists('..\packages\Microsoft.Data.SqlClient.SNI.1.1.0\build\net46\Microsoft.Data.SqlClient.SNI.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

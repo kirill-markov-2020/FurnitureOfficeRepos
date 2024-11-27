@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FurnitureProject"
         mc:Ignorable="d"
-        Title="Furniture" Height="650" Width="800" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize">
+        Title="FurniCore" Height="650" Width="800" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" Icon="/png.jpg">
     <Window.Resources>
         <Style TargetType="TextBox" x:Key="TextBoxBorderRound">
             <Setter Property="Template">
