@@ -21,7 +21,7 @@ namespace FurnitureProject
                 {
                     ConnectionStrings = new
                     {
-                        Сonnection = "Server=KIRILL-MARKOV;Database=DataBase;Integrated Security=True;"
+                        Сonnection = "Server=KIRILL-MARKOV;Database=DataBase;Integrated Security=True;TrustServerCertificate=True;"
                     }
                 };
                 File.WriteAllText(configFileName, System.Text.Json.JsonSerializer.Serialize(defaultConfig, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
