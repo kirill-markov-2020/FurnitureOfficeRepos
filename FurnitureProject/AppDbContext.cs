@@ -36,5 +36,5 @@ namespace FurnitureProject
                 optionsBuilder.UseSqlServer(connectionString);
             }
         }
-    }
+    }  
 }

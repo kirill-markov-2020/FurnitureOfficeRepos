@@ -4,11 +4,16 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
+
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+
 
 
 namespace FurnitureProject
@@ -22,11 +27,13 @@ namespace FurnitureProject
         {
             InitializeComponent();
             InitializeLoadingTimer();
+            Loaded += (s, e) => CheckDatabaseConnectionAsync();
+            StartConnectionCheckTimer();
         }
-
+        
         private void TextBoxInputLogin_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (TextBoxInputLogin.Text == "Введите логин" || UserLoginTextBox.Text == "Введите логин")
+            if (TextBoxInputLogin.Text == "Введите логин")
             {
                 TextBoxInputLogin.Text = "";
                 TextBoxInputLogin.Foreground = Brushes.Black;
@@ -85,9 +92,18 @@ namespace FurnitureProject
             if (ProductQuantityTextBox.Text == "Количество:")
             {
                 ProductQuantityTextBox.Text = "";
-                ProductQuantityTextBox.Foreground = Brushes.Black;
+                ProductQuantityTextBox.Foreground =     Brushes.Black;
             }
         }
+        private void CaptchaInputTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (CaptchaInputTextBox.Text == "Введите текст капчи")
+            {
+                CaptchaInputTextBox.Text = "";
+                CaptchaInputTextBox.Foreground = Brushes.Black;
+            }
+        }
+
         private void TextBoxInputLogin_LostFocus(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(TextBoxInputLogin.Text))
@@ -113,8 +129,14 @@ namespace FurnitureProject
             if (string.IsNullOrWhiteSpace(UserPatronymicTextBox.Text))
             {
                 UserPatronymicTextBox.Text = "Введите отчество";
-                UserPatronymicTextBox.Foreground = Brushes.Gray;
+                UserPatronymicTextBox.Foreground =  Brushes.Gray;
             }
+            if (string.IsNullOrWhiteSpace(CaptchaInputTextBox.Text))
+            {
+                CaptchaInputTextBox.Text = "Введите текст капчи";
+                CaptchaInputTextBox.Foreground = Brushes.Gray; 
+            }
+
         }
         private void ProductNameTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
@@ -176,6 +198,55 @@ namespace FurnitureProject
             }
         }
 
+
+        private void StartConnectionCheckTimer()
+        {
+            loadingTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            loadingTimer.Tick += (s, e) => CheckDatabaseConnectionAsync();
+            loadingTimer.Start();
+        }
+
+        private async void CheckDatabaseConnectionAsync()
+        {
+            bool isConnected = await Task.Run(() =>
+            {
+                try
+                {
+                    using (var dbContext = new AppDbContext())
+                    {
+                        return dbContext.Database.CanConnect();
+                    }
+                }
+                catch
+                {
+                    return false;
+                }
+            });
+
+            UpdateConnectionStatus(isConnected);
+        }
+
+        private void UpdateConnectionStatus(bool isConnected)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (isConnected)
+                {
+                    
+                    DbConnectionStatus.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    DbConnectionStatus.Visibility = Visibility.Visible;
+                }
+            });
+        }
+
+
+
         private DispatcherTimer loadingTimer;
         private void InitializeLoadingTimer()
         {
@@ -215,44 +286,130 @@ namespace FurnitureProject
 
             using (var dbContext = new AppDbContext())
             {
-                try
-                {
-                    var user = dbContext.Users
-                        .FirstOrDefault(u => u.Login == TextBoxInputLogin.Text && u.Password == PasswordBox.Password);
+                var user = dbContext.Users
+                                    .FirstOrDefault(u => u.Login == TextBoxInputLogin.Text && u.Password == PasswordBox.Password);
 
-                    if (user != null)
+                if (user != null)
+                {
+                    CurrentRole = user.Role;
+                    failedAttempts = 0; 
+                    AuthorizationPanel.Visibility = Visibility.Collapsed;
+                    switch (CurrentRole)
                     {
-                        CurrentRole = user.Role;
-                        AuthorizationPanel.Visibility = Visibility.Collapsed;                      
-                        switch (CurrentRole)
-                        {
-                            case "Manager":
-                                ShowLoadingPanel();
-                                LoadManagerCategoriesAndProducts();
-                                break;
-                            case "Administrator":
-                                ShowLoadingPanel(); 
-                                break;
-                            case "Consultant":
-                                ShowLoadingPanel();
-                                LoadCategories();
-                                break;
-                            default:
-                                MessageBox.Show("Неизвестная роль пользователя.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                                AuthorizationPanel.Visibility = Visibility.Visible;
-                                break;
-                        }
+                        case "Manager":
+                            ShowLoadingPanel();
+                            LoadManagerCategoriesAndProducts();
+                            break;
+                        case "Administrator":
+                            ShowLoadingPanel();
+                            break;
+                        case "Consultant":
+                            ShowLoadingPanel();
+                            LoadCategories();
+                            break;
+                        default:
+                            MessageBox.Show("Неизвестная роль.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            AuthorizationPanel.Visibility = Visibility.Visible;
+                            break;
+                    }
+                }
+                else
+                {
+                    failedAttempts++;
+                    if (failedAttempts >= 5)
+                    {
+                        ShowCaptchaPanel();
                     }
                     else
                     {
-                        MessageBox.Show("Неверный логин или пароль", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show("Неверный логин или пароль.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                 }
-                catch (Exception ex)
+            }
+        }
+
+
+
+        private int failedAttempts = 0;
+        private string currentCaptchaText;
+        private string GenerateCaptchaText(int length = 5)
+        {
+            var random = new Random();
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, length)
+                                        .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        private BitmapImage GenerateCaptchaImage(string captchaText)
+        {
+            var bitmap = new RenderTargetBitmap(300, 100, 96, 96, PixelFormats.Pbgra32);
+            var visual = new DrawingVisual();
+            using (var context = visual.RenderOpen())
+            {
+                context.DrawRectangle(Brushes.White, null, new Rect(0, 0, 300, 100));
+                var random = new Random();
+                for (int i = 0; i < captchaText.Length; i++)
                 {
-                    MessageBox.Show("Ошибка при авторизации: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                    Debug.WriteLine(ex.Message);
+                    var fontSize = random.Next(24, 32);
+                    var brush = new SolidColorBrush(Color.FromRgb(
+                        (byte)random.Next(0, 256),
+                        (byte)random.Next(0, 256),
+                        (byte)random.Next(0, 256)));
+                    var formattedText = new FormattedText(
+                        captchaText[i].ToString(),
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        FlowDirection.LeftToRight,
+                        new Typeface("Arial"),
+                        fontSize,
+                        brush,
+                        96);
+                    context.DrawText(formattedText, new Point(i * 50 + random.Next(-10, 10), random.Next(0, 40)));
                 }
+            }
+            bitmap.Render(visual);
+            var bitmapImage = new BitmapImage();
+            using (var memoryStream = new MemoryStream())
+            {
+                var encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(bitmap));
+                encoder.Save(memoryStream);
+                memoryStream.Seek(0, SeekOrigin.Begin);
+                bitmapImage.BeginInit();
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.StreamSource = memoryStream;
+                bitmapImage.EndInit();
+            }
+            return bitmapImage;
+        }
+        private void ShowCaptchaPanel()
+        {
+            AuthorizationPanel.Visibility = Visibility.Collapsed;
+            CaptchaPanel.Visibility = Visibility.Visible;
+            currentCaptchaText = GenerateCaptchaText();
+            CaptchaImageBox.Source = GenerateCaptchaImage(currentCaptchaText);
+        }
+
+        private void ShowAuthorizationPanel()
+        {
+            CaptchaPanel.Visibility = Visibility.Collapsed;
+            AuthorizationPanel.Visibility = Visibility.Visible;
+        }
+        private void CaptchaSubmitButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (CaptchaInputTextBox.Text == currentCaptchaText)
+            {
+                MessageBox.Show("Капча пройдена!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                failedAttempts = 0; 
+                CaptchaInputTextBox.Clear();
+                ShowAuthorizationPanel();
+            }
+            else
+            {
+                MessageBox.Show("Неправильный текст капчи... Попробуйте снова.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                currentCaptchaText = GenerateCaptchaText();
+                CaptchaImageBox.Source = GenerateCaptchaImage(currentCaptchaText);
+                CaptchaInputTextBox.Text = "Введите текст капчи";
+               
             }
         }
 
@@ -603,7 +760,7 @@ namespace FurnitureProject
                 ProductQuantityTextBox.Text = "Количество:";
                 ProductQuantityTextBox.Foreground = Brushes.Gray;
                 ProductPriceTextBox.Text = "Стоимость:";
-                ProductPriceTextBox.Foreground = Brushes.Gray;
+                ProductPriceTextBox.Foreground =  Brushes.Gray;
                 ProductNameTextBox.Text = "Название товара:";
                 ProductNameTextBox.Foreground = Brushes.Gray;
             }
@@ -844,10 +1001,7 @@ namespace FurnitureProject
             string loginToDelete = selectedUser.Login;
 
             MessageBoxResult result = MessageBox.Show(
-                $"Вы действительно хотите удалить пользователя '{loginToDelete}'?",
-                "Подтверждение удаления",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question
+                $"Вы действительно хотите удалить пользователя '{loginToDelete}'?", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question
             );
 
             if (result == MessageBoxResult.Yes)
