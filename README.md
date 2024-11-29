@@ -24,7 +24,7 @@
 
 ## Технологии, используемые в приложении :computer:
 1) Интерфейс приложения разработан на **WPF**(XAML)
-2) Бэкэнд приложения написан на языке программирования **C#** и [**ORM Entity Framework Core**](https://learn.microsoft.com/ru-ru/ef/core/):globe_with_meridians: для работы с базой данных.
+2) Бэкэнд приложения написан на языке программирования **C#** и [**ORM Entity Framework Core**](https://learn.microsoft.com/ru-ru/ef/core/):globe_with_meridians: для работы с базой данных
 3) База данных развернута в [**Sql Server Managment Studio**](https://learn.microsoft.com/ru-ru/sql/ssms/sql-server-management-studio-ssms?view=sql-server-ver16):globe_with_meridians:
 4) Подключение к БД выведено в JSON-файл
 5) Безопасность входа реализована с помощью капчи
