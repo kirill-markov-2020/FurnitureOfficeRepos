@@ -8,22 +8,6 @@ using System.Threading.Tasks;
 
 namespace FurnitureProject.Models
 {
-
-
-    [Table("Category")] 
-
-    public class Category
-    {
-        [Key]
-        public int Id { get; set; }
-
-        public string Name { get; set; }
-
-        public ICollection<Product> Products { get; set; }
-    }
-
-
-
     [Table("Product")]
 
     public class Product
@@ -41,15 +25,5 @@ namespace FurnitureProject.Models
         public int Quantity { get; set; }
 
         public Category Category { get; set; }
-    }
-    public class User
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Surname { get; set; }
-        public string Patronymic { get; set; }
-        public string Login { get; set; }
-        public string Password { get; set; }
-        public string Role { get; set; }
     }
 }

@@ -3,7 +3,8 @@ using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
-
+using System;
+using System.Windows;
 
 namespace FurnitureProject
 {
@@ -12,29 +13,30 @@ namespace FurnitureProject
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<User> Users { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             const string configFileName = "config.json";
+            string connectionString = string.Empty;
+
             if (!File.Exists(configFileName))
             {
-                var defaultConfig = new
-                {
-                    ConnectionStrings = new
-                    {
-                        Сonnection = "Server=KIRILL-MARKOV;Database=DataBase;Integrated Security=True;TrustServerCertificate=True;"
-                    }
-                };
-                File.WriteAllText(configFileName, System.Text.Json.JsonSerializer.Serialize(defaultConfig, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+
+                MessageBox.Show("Конфигурационный файл не найден. Пожалуйста, создайте файл config.json с правильной строкой подключения.");
+                return;
             }
+
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile(configFileName, optional: false, reloadOnChange: true)
                 .Build();
-            string connectionString = configuration.GetConnectionString("Сonnection");
+
+            connectionString = configuration.GetConnectionString("Сonnection");
+
             if (!optionsBuilder.IsConfigured)
             {
                 optionsBuilder.UseSqlServer(connectionString);
             }
         }
-    }  
+    }
 }

@@ -198,15 +198,15 @@ namespace FurnitureProject
             }
         }
 
-
+        private DispatcherTimer Timer;
         private void StartConnectionCheckTimer()
         {
-            loadingTimer = new DispatcherTimer
+            Timer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromSeconds(1)
             };
-            loadingTimer.Tick += (s, e) => CheckDatabaseConnectionAsync();
-            loadingTimer.Start();
+            Timer.Tick += (s, e) => CheckDatabaseConnectionAsync();
+            Timer.Start();
         }
 
         private async void CheckDatabaseConnectionAsync()
