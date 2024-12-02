@@ -5,6 +5,8 @@ VisualStudioVersion = 17.9.34526.213
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FurnitureProject", "FurnitureProject\FurnitureProject.csproj", "{570434AB-B884-4621-AC5D-22D1FD6711F5}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "FurnitureInstaller", "FurnitureInstaller\FurnitureInstaller.vdproj", "{188A4FDD-8F64-4618-8BC4-59EF177C678D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,8 @@ Global
 		{570434AB-B884-4621-AC5D-22D1FD6711F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{570434AB-B884-4621-AC5D-22D1FD6711F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{570434AB-B884-4621-AC5D-22D1FD6711F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{188A4FDD-8F64-4618-8BC4-59EF177C678D}.Debug|Any CPU.ActiveCfg = Debug
+		{188A4FDD-8F64-4618-8BC4-59EF177C678D}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
