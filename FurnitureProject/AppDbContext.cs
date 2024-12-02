@@ -1,9 +1,9 @@
 ﻿using FurnitureProject.Models;
-using System.IO;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Json;
 using System;
+using Microsoft.Extensions.Configuration;
+using System.Diagnostics;
+using System.IO;
 using System.Windows;
 
 namespace FurnitureProject
@@ -18,25 +18,33 @@ namespace FurnitureProject
         {
             const string configFileName = "config.json";
             string connectionString = string.Empty;
-
-            if (!File.Exists(configFileName))
+            string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configFileName);
+            if (!File.Exists(configPath))
             {
+                MessageBox.Show($"Конфигурационный файл не найден по пути: {configPath}");
 
-                MessageBox.Show("Конфигурационный файл не найден. Пожалуйста, создайте файл config.json с правильной строкой подключения.");
                 return;
             }
-
             var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
+                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                 .AddJsonFile(configFileName, optional: false, reloadOnChange: true)
                 .Build();
 
-            connectionString = configuration.GetConnectionString("Сonnection");
-
-            if (!optionsBuilder.IsConfigured)
+            connectionString = configuration.GetConnectionString("Connection");
+            try
             {
                 optionsBuilder.UseSqlServer(connectionString);
+                File.AppendAllText("error.log", $"{DateTime.Now}: Да, подключение к БД успешно настроено.\n");
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка подключения к базе данных: {ex.Message}");
+                File.WriteAllText("error.log", ex.ToString());
             }
         }
+
+
+
     }
 }

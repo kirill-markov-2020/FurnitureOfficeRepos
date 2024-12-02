@@ -220,13 +220,21 @@ namespace FurnitureProject
                         return dbContext.Database.CanConnect();
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    LogError("Нет, Ошибка проверки подключения к базе данных", ex);
                     return false;
                 }
             });
 
             UpdateConnectionStatus(isConnected);
+        }
+
+        private void LogError(string message, Exception ex)
+        {
+            string logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "error.log");
+            string logMessage = $"{DateTime.Now}: {message}\n{ex}\n";
+            File.AppendAllText(logFilePath, logMessage);
         }
 
         private void UpdateConnectionStatus(bool isConnected)
